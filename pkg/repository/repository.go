@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
+	gvapi "github.com/ukurysheva/gv-api"
 )
 
 type Repository struct {
@@ -18,12 +19,14 @@ type Repository struct {
 type AuthorizationClient interface {
 }
 type AuthorizationAdmin interface {
+	CreateAdminUser(gvapi.AdminUser) (int, error)
+	GetUserAdmin(username, password string) (gvapi.AdminUser, error)
 }
 type Aircraft interface {
 }
 type Country interface {
-	// Create(userId int, country gvapi.Country) (int, error)
-	// GetAll() ([]gvapi.Country, error)
+	Create(userId int, country gvapi.Country) (int, error)
+	GetAll() ([]gvapi.Country, error)
 	// GetById(countryId int) (gvapi.Country, error)
 	// Update(userId, countryId int, info gvapi.Country) error
 }
