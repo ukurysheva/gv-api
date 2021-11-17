@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -42,4 +44,24 @@ func (r *CountryPostgres) GetAll() ([]gvapi.Country, error) {
 	err := r.db.Select(&countries, query)
 
 	return countries, err
+}
+
+func (r *CountryPostgres) GetById(countryId int) (gvapi.Country, error) {
+	var country gvapi.Country
+
+	query := fmt.Sprintf(`SELECT country_id, country_code, country_name, country_wikipedia_link, country_continent FROM %s 
+	                      WHERE country_id = $1`, countryTable)
+
+	if err := r.db.Get(&country, query, countryId); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			fmt.Println("No rows were returned!")
+			return country, errors.New("No country with such id found")
+		case nil:
+			return country, nil
+		default:
+			return country, err
+		}
+	}
+	return country, nil
 }

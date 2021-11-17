@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	gvapi "github.com/ukurysheva/gv-api"
 )
 
 func (h *Handler) createCountry(c *gin.Context) {
+	fmt.Println("createCountry")
 	userId, err := getUserId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -44,6 +47,23 @@ func (h *Handler) getAllCountries(c *gin.Context) {
 	c.JSON(http.StatusOK, getAllCountriresResponse{
 		Data: countries,
 	})
+}
+
+func (h *Handler) getCountryById(c *gin.Context) {
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	country, err := h.services.Country.GetById(id)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, country)
 }
 
 type getAllCountriresResponse struct {

@@ -19,3 +19,7 @@ func (s *CountryService) Create(userId int, country gvapi.Country) (int, error) 
 func (s *CountryService) GetAll() ([]gvapi.Country, error) {
 	return s.repo.GetAll()
 }
+
+func (s *CountryService) GetById(countryId int) (gvapi.Country, error) {
+	return s.repo.GetById(countryId)
+}

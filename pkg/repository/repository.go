@@ -23,17 +23,26 @@ type AuthorizationAdmin interface {
 	GetUserAdmin(username, password string) (gvapi.AdminUser, error)
 }
 type Aircraft interface {
+	Create(userId int, country gvapi.Aircraft) (int, error)
+	GetAll() ([]gvapi.Aircraft, error)
+	GetById(aircraftId int) (gvapi.Aircraft, error)
 }
 type Country interface {
 	Create(userId int, country gvapi.Country) (int, error)
 	GetAll() ([]gvapi.Country, error)
-	// GetById(countryId int) (gvapi.Country, error)
+	GetById(countryId int) (gvapi.Country, error)
 	// Update(userId, countryId int, info gvapi.Country) error
 }
 type Airport interface {
+	Create(userId int, airport gvapi.Airport) (int, error)
+	GetAll() ([]gvapi.Airport, error)
+	GetById(airportId int) (gvapi.Airport, error)
 }
 
 type Airline interface {
+	Create(userId int, airline gvapi.Airline) (int, error)
+	GetAll() ([]gvapi.Airline, error)
+	GetById(airlineId int) (gvapi.Airline, error)
 }
 
 type Ticket interface {

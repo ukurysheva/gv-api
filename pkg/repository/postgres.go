@@ -9,6 +9,9 @@ import (
 const (
 	usersAdminTable = "dbo.t_admins"
 	countryTable    = "dbo.t_countries"
+	airportTable    = "dbo.t_airports"
+	aircraftTable   = "dbo.t_aircraft_models"
+	airlineTable    = "dbo.t_airlines"
 	usersListsTable = "users_lists"
 	todoItemsTable  = "todo_items"
 	listsItemsTable = "lists_items"
