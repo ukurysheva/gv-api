@@ -12,6 +12,7 @@ const (
 	airportTable    = "dbo.t_airports"
 	aircraftTable   = "dbo.t_aircraft_models"
 	airlineTable    = "dbo.t_airlines"
+	flightTable     = "dbo.t_flights"
 	usersListsTable = "users_lists"
 	todoItemsTable  = "todo_items"
 	listsItemsTable = "lists_items"

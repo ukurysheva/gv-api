@@ -73,6 +73,18 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			}
 
 		}
+
+		flights := api.Group("/flights")
+		{
+			flights.GET("/", h.getAllFlights)
+			flights.GET("/:id", h.getFlightById)
+
+			authenticated := flights.Group("/", h.userIdentify)
+			{
+				authenticated.POST("/", h.createFlight)
+			}
+
+		}
 	}
 
 	return router

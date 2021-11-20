@@ -22,6 +22,7 @@ func NewService(repo *repository.Repository) *Service {
 		Airport:       NewAirportService(repo.Airport, repo.Country),
 		Airline:       NewAirlineService(repo.Airline, repo.Country),
 		Aircraft:      NewAircraftService(repo.Aircraft),
+		Flight:        NewFlightService(repo.Flight, repo.Aircraft, repo.Airport),
 	}
 }
 
@@ -46,6 +47,9 @@ type Airport interface {
 	GetById(airportId int) (gvapi.Airport, error)
 }
 type Flight interface {
+	Create(userId int, airline gvapi.Flight) (int, error)
+	GetAll() ([]gvapi.Flight, error)
+	GetById(flightId int) (gvapi.Flight, error)
 }
 type Airline interface {
 	Create(userId int, airport gvapi.Airline) (int, error)

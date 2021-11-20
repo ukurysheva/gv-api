@@ -49,6 +49,9 @@ type Ticket interface {
 }
 
 type Flight interface {
+	Create(userId int, airline gvapi.Flight) (int, error)
+	GetAll() ([]gvapi.Flight, error)
+	GetById(flightId int) (gvapi.Flight, error)
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -59,5 +62,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 		Airport:             NewAirportPostgres(db),
 		Airline:             NewAirlinePostgres(db),
 		Country:             NewCountryPostgres(db),
+		Flight:              NewFlightPostgres(db),
 	}
 }
