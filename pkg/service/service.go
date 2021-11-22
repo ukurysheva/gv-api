@@ -7,6 +7,7 @@ import (
 
 type Service struct {
 	Authorization
+	User
 	Aircraft
 	Country
 	Airport
@@ -18,6 +19,7 @@ type Service struct {
 func NewService(repo *repository.Repository) *Service {
 	return &Service{
 		Authorization: NewAuthAdminService(repo.AuthorizationAdmin),
+		User:          NewUserService(repo.User),
 		Country:       NewCountryService(repo.Country),
 		Airport:       NewAirportService(repo.Airport, repo.Country),
 		Airline:       NewAirlineService(repo.Airline, repo.Country),
@@ -27,8 +29,15 @@ func NewService(repo *repository.Repository) *Service {
 }
 
 type Authorization interface {
-	GetUserAdmin(username, password string) (gvapi.AdminUser, error)
-	CreateAdminUser(gvapi.AdminUser) (int, error)
+	GetUserAdmin(username, password string) (gvapi.AuthAdminUser, error)
+	CreateAdminUser(gvapi.AuthAdminUser) (int, error)
+}
+
+type User interface {
+	CreateUser(gvapi.User) (int, error)
+	GetUser(username, password string) (gvapi.User, error)
+	GetProfile(userId int) (gvapi.User, error)
+	Update(userId int, input gvapi.UpdateUserInput) error
 }
 type Aircraft interface {
 	Create(userId int, aircraft gvapi.Aircraft) (int, error)

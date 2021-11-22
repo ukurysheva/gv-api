@@ -22,16 +22,16 @@ func NewAuthAdminService(repo repository.AuthorizationAdmin) *AuthAdminService {
 	return &AuthAdminService{repo: repo}
 }
 
-func (s *AuthAdminService) CreateAdminUser(adminUser gvapi.AdminUser) (int, error) {
-	adminUser.Password = generatePassword(adminUser.Password)
+func (s *AuthAdminService) CreateAdminUser(adminUser gvapi.AuthAdminUser) (int, error) {
+	adminUser.Password = generateAdminPassword(adminUser.Password)
 	return s.repo.CreateAdminUser(adminUser)
 }
 
-func (s *AuthAdminService) GetUserAdmin(username, password string) (gvapi.AdminUser, error) {
-	return s.repo.GetUserAdmin(username, generatePassword(password))
+func (s *AuthAdminService) GetUserAdmin(username, password string) (gvapi.AuthAdminUser, error) {
+	return s.repo.GetUserAdmin(username, generateAdminPassword(password))
 }
 
-func generatePassword(password string) string {
+func generateAdminPassword(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
 

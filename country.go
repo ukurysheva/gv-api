@@ -48,6 +48,36 @@ type Airport struct {
 	ChangeDate   string `json:"changeDate" db:"change_dttm"`
 }
 
+type User struct {
+	Id         int    `json:"-" db:"user_id"`
+	Email      string `json:"userEmail" db:"user_email" binding:"required"`
+	Password   string `json:"userPassword" db:"user_password" binding:"required"`
+	FirstName  string `json:"userFirstName" db:"user_first_name" binding:"required"`
+	LastName   string `json:"userLastName" db:"user_last_name" binding:"required"`
+	MiddleName string `json:"userMiddleName" db:"user_middle_name"`
+	PhoneNum   string `json:"userPhoneNum" db:"user_phone_number" binding:"required"`
+	BirthDate  string `json:"birthDate" db:"birth_date" binding:"required"`
+	CountryId  int    `json:"userCountryId" db:"user_country_id"`
+	CreateDate string `json:"-" db:"create_dttm"`
+	ChangeDate string `json:"-" db:"change_dttm"`
+}
+
+type Client struct {
+	Id              int    `json:"id" db:"client_id"`
+	FirstName       string `json:"firstName" db:"client_first_name" binding:"required"`
+	LastName        string `json:"lastName" db:"client_last_name" binding:"required"`
+	MiddleName      string `json:"middleName" db:"client_middle_name"`
+	PhoneNum        string `json:"phoneNum" db:"client_phone_number" binding:"required"`
+	BirthDate       string `json:"birthDate" db:"birth_date" binding:"required"`
+	PassportNumber  string `json:"passportNumber" db:"client_passport_number" binding:"required"`
+	PassportSeries  string `json:"passportSeries" db:"client_passport_series" binding:"required"`
+	PassportAddress string `json:"passportAddress" db:"client_passport_address" binding:"required"`
+	LivingAddress   string `json:"livingAddress" db:"client_living_address" binding:"required"`
+	CountryId       int    `json:"countryId" db:"client_country_id"`
+	CreateDate      string `json:"-" db:"create_dttm"`
+	ChangeDate      string `json:"-" db:"change_dttm"`
+}
+
 type Flight struct {
 	Id                   int     `json:"id" db:"flight_id"`
 	Name                 string  `json:"flightName" db:"flight_name"`

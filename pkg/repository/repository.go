@@ -8,6 +8,7 @@ import (
 type Repository struct {
 	AuthorizationClient
 	AuthorizationAdmin
+	User
 	Aircraft
 	Country
 	Airport
@@ -19,8 +20,15 @@ type Repository struct {
 type AuthorizationClient interface {
 }
 type AuthorizationAdmin interface {
-	CreateAdminUser(gvapi.AdminUser) (int, error)
-	GetUserAdmin(username, password string) (gvapi.AdminUser, error)
+	CreateAdminUser(gvapi.AuthAdminUser) (int, error)
+	GetUserAdmin(username, password string) (gvapi.AuthAdminUser, error)
+}
+
+type User interface {
+	CreateUser(gvapi.User) (int, error)
+	GetUser(username, password string) (gvapi.User, error)
+	Update(userId int, input gvapi.UpdateUserInput) error
+	GetProfile(userId int) (gvapi.User, error)
 }
 type Aircraft interface {
 	Create(userId int, country gvapi.Aircraft) (int, error)
@@ -58,6 +66,7 @@ func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		AuthorizationClient: NewAuthClientPostgres(db),
 		AuthorizationAdmin:  NewAuthAdminPostgres(db),
+		User:                NewUserPostgres(db),
 		Aircraft:            NewAircraftPostgres(db),
 		Airport:             NewAirportPostgres(db),
 		Airline:             NewAirlinePostgres(db),

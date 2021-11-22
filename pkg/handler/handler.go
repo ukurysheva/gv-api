@@ -22,17 +22,29 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		auth := api.Group("/auth")
 		{
-			auth.POST("/sign-up", h.signUp)
-			auth.POST("/sign-in", h.signIn)
-			auth.POST("/sign-out", h.userLogout)
-			auth.POST("/token/refresh", h.refresh)
+			admin := auth.Group("/admin")
+			{
+				admin.POST("/sign-up", h.adminSignUp)
+				admin.POST("/sign-in", h.adminSignIn)
+				admin.POST("/sign-out", h.adminLogout)
+				admin.POST("/token/refresh", h.tokenAdminRefresh)
+			}
+
+			user := auth.Group("/user")
+			{
+				user.POST("/sign-up", h.userSignUp)
+				user.POST("/sign-in", h.userSignIn)
+				user.POST("/sign-out", h.userLogout)
+				user.POST("/token/refresh", h.tokenUserRefresh)
+			}
+
 		}
 		countries := api.Group("/countries")
 		{
 			countries.GET("/", h.getAllCountries)
 			countries.GET("/:id", h.getCountryById)
 
-			authenticated := countries.Group("/", h.userIdentify)
+			authenticated := countries.Group("/", h.adminIdentify)
 			{
 				authenticated.POST("/", h.createCountry)
 			}
@@ -43,7 +55,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			airports.GET("/", h.getAllAirports)
 			airports.GET("/:id", h.getAirportById)
 
-			authenticated := airports.Group("/", h.userIdentify)
+			authenticated := airports.Group("/", h.adminIdentify)
 			{
 				authenticated.POST("/", h.createAirport)
 			}
@@ -55,7 +67,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			airlines.GET("/", h.getAllAirlines)
 			airlines.GET("/:id", h.getAirlineById)
 
-			authenticated := airlines.Group("/", h.userIdentify)
+			authenticated := airlines.Group("/", h.adminIdentify)
 			{
 				authenticated.POST("/", h.createAirline)
 			}
@@ -67,7 +79,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			aircrafts.GET("/", h.getAllAircrafts)
 			aircrafts.GET("/:id", h.getAircraftById)
 
-			authenticated := aircrafts.Group("/", h.userIdentify)
+			authenticated := aircrafts.Group("/", h.adminIdentify)
 			{
 				authenticated.POST("/", h.createAircraft)
 			}
@@ -79,12 +91,25 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			flights.GET("/", h.getAllFlights)
 			flights.GET("/:id", h.getFlightById)
 
-			authenticated := flights.Group("/", h.userIdentify)
+			authenticated := flights.Group("/", h.adminIdentify)
 			{
 				authenticated.POST("/", h.createFlight)
 			}
-
 		}
+
+		users := api.Group("/users")
+		{
+			authenticated := users.Group("/", h.userIdentify)
+			{
+				profile := authenticated.Group("/profile")
+				{
+					profile.POST("/", h.updateUser)
+					profile.GET("/", h.getUserProfile)
+				}
+
+			}
+		}
+
 	}
 
 	return router

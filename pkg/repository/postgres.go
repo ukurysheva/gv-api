@@ -8,6 +8,7 @@ import (
 
 const (
 	usersAdminTable = "dbo.t_admins"
+	usersTable      = "dbo.t_users"
 	countryTable    = "dbo.t_countries"
 	airportTable    = "dbo.t_airports"
 	aircraftTable   = "dbo.t_aircraft_models"

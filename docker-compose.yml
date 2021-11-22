@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  gvapi:
+    build: ./
+    command: ./gvapi
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=qwerty
+      - ADMIN_SALT=sdlvjsbdvsv29837ef#sdfv
+      - ADMIN_SIGNING_KEY=s234rl2iwe[v0w3fw3]
+      - ADMIN_REFRESH_SECRET=sldfkjs;rfbwse3rw
+      - USER_SALT=238ygvso3rgpweufy23
+      - USER_SIGNING_KEY=?wefvw7sef%&(3)
+      - USER_REFRESH_SECRET=ergwbef"423fhwe
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+      - DB_PASSWORD=qwerty
+    ports:
+      - 5435:5432
