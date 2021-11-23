@@ -42,6 +42,9 @@ func (s *UserService) GetProfile(userId int) (gvapi.User, error) {
 }
 
 func (s *UserService) Update(userId int, input gvapi.UpdateUserInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
 	return s.repo.Update(userId, input)
 }
 

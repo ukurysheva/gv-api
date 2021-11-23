@@ -1,5 +1,7 @@
 package gvapi
 
+import "errors"
+
 type Country struct {
 	Id         int    `json:"countryId" db:"country_id"`
 	Code       string `json:"countryCode" db:"country_code"`
@@ -49,35 +51,22 @@ type Airport struct {
 }
 
 type User struct {
-	Id         int    `json:"-" db:"user_id"`
-	Email      string `json:"userEmail" db:"user_email" binding:"required"`
-	Password   string `json:"userPassword" db:"user_password" binding:"required"`
-	FirstName  string `json:"userFirstName" db:"user_first_name" binding:"required"`
-	LastName   string `json:"userLastName" db:"user_last_name" binding:"required"`
-	MiddleName string `json:"userMiddleName" db:"user_middle_name"`
-	PhoneNum   string `json:"userPhoneNum" db:"user_phone_number" binding:"required"`
-	BirthDate  string `json:"birthDate" db:"birth_date" binding:"required"`
-	CountryId  int    `json:"userCountryId" db:"user_country_id"`
-	PassportNumber  string `json:"passportNumber" db:"passport_number" binding:"required"`
-	PassportSeries  string `json:"passportSeries" db:"passport_series" binding:"required"`
-	PassportAddress string `json:"passportAddress" db:"passport_address" binding:"required"`
-	LivingAddress   string `json:"livingAddress" db:"living_address" binding:"required"`
-	CreateDate string `json:"-" db:"create_dttm"`
-	ChangeDate string `json:"-" db:"change_dttm"`
+	Id              int    `json:"-" db:"user_id"`
+	Email           string `json:"userEmail" db:"user_email" binding:"required"`
+	Password        string `json:"userPassword" db:"user_password" binding:"required"`
+	FirstName       string `json:"userFirstName" db:"user_first_name" binding:"required"`
+	LastName        string `json:"userLastName" db:"user_last_name" binding:"required"`
+	MiddleName      string `json:"userMiddleName" db:"user_middle_name"`
+	PhoneNum        string `json:"userPhoneNum" db:"user_phone_number" binding:"required"`
+	BirthDate       string `json:"birthDate" db:"birth_date" binding:"required"`
+	CountryId       int    `json:"userCountryId" db:"user_country_id"`
+	PassportNumber  string `json:"passportNumber" db:"passport_number"`
+	PassportSeries  string `json:"passportSeries" db:"passport_series"`
+	PassportAddress string `json:"passportAddress" db:"passport_address"`
+	LivingAddress   string `json:"livingAddress" db:"living_address"`
+	CreateDate      string `json:"-" db:"create_dttm"`
+	ChangeDate      string `json:"-" db:"change_dttm"`
 }
-
-// type Client struct {
-// 	Id              int    `json:"id" db:"client_id"`
-// 	FirstName       string `json:"firstName" db:"client_first_name" binding:"required"`
-// 	LastName        string `json:"lastName" db:"client_last_name" binding:"required"`
-// 	MiddleName      string `json:"middleName" db:"client_middle_name"`
-// 	PhoneNum        string `json:"phoneNum" db:"client_phone_number" binding:"required"`
-// 	BirthDate       string `json:"birthDate" db:"birth_date" binding:"required"`
-	
-// 	CountryId       int    `json:"countryId" db:"client_country_id"`
-// 	CreateDate      string `json:"-" db:"create_dttm"`
-// 	ChangeDate      string `json:"-" db:"change_dttm"`
-// }
 
 type Flight struct {
 	Id                   int     `json:"id" db:"flight_id"`
@@ -104,4 +93,29 @@ type Flight struct {
 	Food                 string  `json:"foodFlg" db:"food_flg"`
 	Usb                  string  `json:"usbFlg" db:"usb_flg"`
 	ChangeDate           string  `json:"-" db:"change_dttm"`
+}
+
+type UpdateUserInput struct {
+	Email           *string `json:"userEmail" db:"user_email"`
+	Password        *string `json:"userPassword" db:"user_password"`
+	FirstName       *string `json:"userFirstName" db:"user_first_name"`
+	LastName        *string `json:"userLastName" db:"user_last_name"`
+	MiddleName      *string `json:"userMiddleName" db:"user_middle_name"`
+	PhoneNum        *string `json:"userPhoneNum" db:"user_phone_number"`
+	BirthDate       *string `json:"birthDate" db:"birth_date"`
+	CountryId       *int    `json:"userCountryId" db:"user_country_id"`
+	PassportNumber  *string `json:"passportNumber" db:"passport_number"`
+	PassportSeries  *string `json:"passportSeries" db:"passport_series"`
+	PassportAddress *string `json:"passportAddress" db:"passport_address"`
+	LivingAddress   *string `json:"livingAddress" db:"living_address"`
+}
+
+func (i UpdateUserInput) Validate() error {
+	if i.Email == nil && i.Password == nil && i.FirstName == nil && i.LastName == nil &&
+		i.MiddleName == nil && i.PhoneNum == nil && i.BirthDate == nil && i.CountryId == nil &&
+		i.PassportNumber == nil && i.PassportSeries == nil && i.PassportAddress == nil && i.LivingAddress == nil {
+		return errors.New("update structure has no values")
+	}
+
+	return nil
 }

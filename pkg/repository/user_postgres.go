@@ -25,8 +25,23 @@ func (r *UserPostgres) CreateUser(user gvapi.User) (int, error) {
 		return 0, err
 	}
 
+	var userExist gvapi.User
+	query := fmt.Sprintf("SELECT user_id FROM %s WHERE user_email=$1 AND user_password=$2", usersTable)
+
+	if err := r.db.Get(&userExist, query, user.Email, user.Password); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+		case nil:
+		default:
+			return 0, err
+		}
+	}
+	if userExist.Id != 0 {
+		return 0, errors.New("Email is already taken")
+	}
+
 	var id int
-	query := fmt.Sprintf("INSERT INTO %s (user_email, user_password, user_first_name, user_last_name, user_phone_number, birth_date)"+
+	query = fmt.Sprintf("INSERT INTO %s (user_email, user_password, user_first_name, user_last_name, user_phone_number, birth_date)"+
 		" VALUES ($1, $2, $3, $4, $5, $6) RETURNING user_id", usersTable)
 
 	row := r.db.QueryRow(query, user.Email, user.Password, user.FirstName, user.LastName, user.PhoneNum, user.BirthDate)
@@ -60,8 +75,10 @@ func (r *UserPostgres) GetProfile(userId int) (gvapi.User, error) {
 
 	var user gvapi.User
 	query := fmt.Sprintf("SELECT user_email, user_first_name, user_last_name, user_phone_number, birth_date, "+
-		"COALESCE(user_middle_name, '') as user_middle_name, COALESCE(user_country_id, 0) as user_country_id FROM %s WHERE user_id=$1", usersTable)
-	fmt.Println("GetProfile postgres")
+		"COALESCE(user_middle_name, '') as user_middle_name, COALESCE(user_country_id, 0) as user_country_id,"+
+		"COALESCE(passport_number, '') as passport_number, COALESCE(passport_series, '') as passport_series,"+
+		"COALESCE(passport_address, '') as passport_address, COALESCE(living_address, '') as living_address "+
+		" FROM %s WHERE user_id=$1", usersTable)
 
 	if err := r.db.Get(&user, query, userId); err != nil {
 		switch err {
@@ -74,8 +91,6 @@ func (r *UserPostgres) GetProfile(userId int) (gvapi.User, error) {
 		}
 	}
 
-	// query := fmt.Sprintf("SELECT * FROM %s tl", countryTable)
-	// err := r.db.Select(&countries, query)
 	fmt.Println(user)
 	return user, nil
 }
@@ -130,6 +145,27 @@ func (r *UserPostgres) Update(userId int, input gvapi.UpdateUserInput) error {
 	if input.CountryId != nil {
 		setValues = append(setValues, fmt.Sprintf("user_country_id=$%d", argId))
 		args = append(args, *input.CountryId)
+		argId++
+	}
+	if input.PassportNumber != nil {
+		setValues = append(setValues, fmt.Sprintf("passport_number=$%d", argId))
+		args = append(args, *input.PassportNumber)
+		argId++
+	}
+
+	if input.PassportSeries != nil {
+		setValues = append(setValues, fmt.Sprintf("passport_series=$%d", argId))
+		args = append(args, *input.PassportSeries)
+		argId++
+	}
+	if input.PassportAddress != nil {
+		setValues = append(setValues, fmt.Sprintf("passport_address=$%d", argId))
+		args = append(args, *input.PassportAddress)
+		argId++
+	}
+	if input.LivingAddress != nil {
+		setValues = append(setValues, fmt.Sprintf("living_address=$%d", argId))
+		args = append(args, *input.LivingAddress)
 		argId++
 	}
 	fmt.Println(input)

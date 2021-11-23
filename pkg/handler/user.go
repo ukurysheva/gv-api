@@ -23,21 +23,9 @@ func (h *Handler) userSignUp(c *gin.Context) {
 		return
 	}
 
-	user, err := h.services.User.GetUser(input.Email, input.Password)
-
-	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	if user.Id != 0 {
-		newErrorResponse(c, http.StatusBadRequest, "Email is already taken")
-		return
-	}
-
 	id, err := h.services.User.CreateUser(input)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -128,6 +116,7 @@ func (h *Handler) updateUser(c *gin.Context) {
 
 	var input gvapi.UpdateUserInput
 	if err := c.BindJSON(&input); err != nil {
+		fmt.Println("BindJSON UpdateUserInput error")
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -143,7 +132,7 @@ func (h *Handler) updateUser(c *gin.Context) {
 func (h *Handler) CreateUserToken(userId int) (*TokenDetails, error) {
 	var err error
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 3).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
 	td.AccessUuid = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
