@@ -103,7 +103,14 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			{
 				authenticated.POST("/", h.updateUser)
 				authenticated.GET("/", h.getUserProfile)
+
+				purchases := authenticated.Group("/purchases")
+				{
+					purchases.POST("/", h.createPurchase)
+					purchases.GET("/:id", h.getPurchaseById)
+				}
 			}
+
 		}
 
 	}

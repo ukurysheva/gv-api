@@ -13,7 +13,7 @@ type Repository struct {
 	Airport
 	Flight
 	Airline
-	Ticket
+	Purchase
 }
 type AuthorizationAdmin interface {
 	CreateAdminUser(gvapi.AuthAdminUser) (int, error)
@@ -49,7 +49,9 @@ type Airline interface {
 	GetById(airlineId int) (gvapi.Airline, error)
 }
 
-type Ticket interface {
+type Purchase interface {
+	Create(userId int, purchase gvapi.Purchase) (int, error)
+	GetById(purchaseId int) (gvapi.Purchase, error)
 }
 
 type Flight interface {
@@ -60,12 +62,13 @@ type Flight interface {
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		AuthorizationAdmin:  NewAuthAdminPostgres(db),
-		User:                NewUserPostgres(db),
-		Aircraft:            NewAircraftPostgres(db),
-		Airport:             NewAirportPostgres(db),
-		Airline:             NewAirlinePostgres(db),
-		Country:             NewCountryPostgres(db),
-		Flight:              NewFlightPostgres(db),
+		AuthorizationAdmin: NewAuthAdminPostgres(db),
+		User:               NewUserPostgres(db),
+		Aircraft:           NewAircraftPostgres(db),
+		Airport:            NewAirportPostgres(db),
+		Airline:            NewAirlinePostgres(db),
+		Country:            NewCountryPostgres(db),
+		Flight:             NewFlightPostgres(db),
+		Purchase:           NewPurchasePostgres(db),
 	}
 }

@@ -14,9 +14,7 @@ const (
 	aircraftTable   = "dbo.t_aircraft_models"
 	airlineTable    = "dbo.t_airlines"
 	flightTable     = "dbo.t_flights"
-	usersListsTable = "users_lists"
-	todoItemsTable  = "todo_items"
-	listsItemsTable = "lists_items"
+	purchaseTable   = "dbo.t_purchases"
 )
 
 type Config struct {
@@ -30,13 +28,13 @@ type Config struct {
 
 func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 	url := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
-        cfg.Username,
-        cfg.Password,
-        cfg.Host,
-        cfg.Port,
-        cfg.DBName)
+		cfg.Username,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.DBName)
 	db, err := sqlx.Open("postgres", url)
-	    
+
 	if err != nil {
 		return nil, err
 	}

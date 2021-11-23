@@ -13,7 +13,7 @@ type Service struct {
 	Airport
 	Flight
 	Airline
-	Ticket
+	Purchase
 }
 
 func NewService(repo *repository.Repository) *Service {
@@ -25,6 +25,7 @@ func NewService(repo *repository.Repository) *Service {
 		Airline:       NewAirlineService(repo.Airline, repo.Country),
 		Aircraft:      NewAircraftService(repo.Aircraft),
 		Flight:        NewFlightService(repo.Flight, repo.Aircraft, repo.Airport),
+		Purchase:      NewPurchaseService(repo.Purchase, repo.Flight),
 	}
 }
 
@@ -61,9 +62,15 @@ type Flight interface {
 	GetById(flightId int) (gvapi.Flight, error)
 }
 type Airline interface {
-	Create(userId int, airport gvapi.Airline) (int, error)
+	Create(userId int, airline gvapi.Airline) (int, error)
 	GetAll() ([]gvapi.Airline, error)
 	GetById(airlineId int) (gvapi.Airline, error)
+}
+
+type Purchase interface {
+	Create(userId int, purchase gvapi.Purchase) (int, error)
+	// GetAll() ([]gvapi.Airline, error)
+	GetById(purchase int) (gvapi.Purchase, error)
 }
 type Ticket interface {
 }

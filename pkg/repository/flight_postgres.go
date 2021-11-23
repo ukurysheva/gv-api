@@ -60,8 +60,26 @@ func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 	var flight gvapi.Flight
 
-	query := fmt.Sprintf(`SELECT * FROM %s 
-	                      WHERE flight_id = $1`, flightTable)
+	query := fmt.Sprintf(`SELECT fl.*,`+
+		`fl.ticket_num_economy_class -  
+					(SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
+					GROUP BY pr.purchase_id) AS ticket_num_economy_class_avail,`+
+
+		`fl.ticket_num_pr_economy_class -  
+					(SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
+					GROUP BY pr.purchase_id) AS ticket_num_pr_economy_class_avail,`+
+		`fl.ticket_num_business_class -  
+					(SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
+					GROUP BY pr.purchase_id) 	AS ticket_num_business_class_avail,`+
+		`fl.ticket_num_first_class -  
+					(SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
+					GROUP BY pr.purchase_id) AS ticket_num_first_class_avail
+		FROM %s fl WHERE fl.flight_id = $1
+												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable)
 	if err := r.db.Get(&flight, query, flightId); err != nil {
 		switch err {
 		case sql.ErrNoRows:

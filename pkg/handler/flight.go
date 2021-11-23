@@ -76,6 +76,26 @@ func (h *Handler) getFlightById(c *gin.Context) {
 	c.JSON(http.StatusOK, flight)
 }
 
+// func (h *Handler) getFlightByParams(c *gin.Context) {
+
+// 	var input gvapi.FlightSearchParams
+
+// 	if err := c.BindJSON(&input); err != nil {
+// 		newErrorResponse(c, http.StatusBadRequest, "invalid input body")
+// 		return
+// 	}
+
+// 	flights, err := h.services.Flight.getFlightByParams()
+// 	if err != nil {
+// 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, getAllFlightsResponse{
+// 		Data: flights,
+// 	})
+// }
+
 func CheckFlightValues(c *gin.Context, input gvapi.Flight) bool {
 
 	flagVals := make(map[string]bool)

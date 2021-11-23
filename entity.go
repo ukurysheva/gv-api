@@ -69,30 +69,45 @@ type User struct {
 }
 
 type Flight struct {
-	Id                   int     `json:"id" db:"flight_id"`
-	Name                 string  `json:"flightName" db:"flight_name"`
-	AirlineId            int     `json:"airlineId" db:"airline_id"`
-	TicketNumEconomy     int     `json:"ticketNumEconomy" db:"ticket_num_economy_class"`
-	TicketNumPrEconomy   int     `json:"ticketNumPrEconomy" db:"ticket_num_pr_economy_class"`
-	TicketNumBusiness    int     `json:"ticketNumBusiness" db:"ticket_num_business_class"`
-	TicketNumFirstClass  int     `json:"ticketNumFirstClass" db:"ticket_num_first_class"`
-	CostRubEconomy       float32 `json:"costRubEconomy" db:"cost_economy_class_rub"`
-	CostRubPrEconomy     float32 `json:"costRubPrEconomy" db:"cost_pr_economy_class_rub"`
-	CostRubBusiness      float32 `json:"costRubBusiness" db:"cost_business_class_rub"`
-	CostRubFirstClass    float32 `json:"costRubFirstClass" db:"cost_first_class_rub"`
-	AircraftId           int     `json:"aircraftId" db:"aircraft_model_id"`
-	AirportDepId         int     `json:"airportDepId" db:"departure_airport_id"`
-	AirportLandId        int     `json:"airportLandId" db:"landing_airport_id"`
-	DepartureTime        string  `json:"departureTime" db:"departure_time"`
-	LandingTime          string  `json:"landingTime" db:"landing_time"`
-	MaxLugWeightKg       float32 `json:"maxLuggageWeightKg" db:"max_luggage_weight_kg"`
-	CostLugWeightRub     float32 `json:"costLuggageWeightRub" db:"cost_luggage_weight_rub"`
-	MaxHandLugWeightKg   float32 `json:"maxHandLuggageWeightKg" db:"max_hand_luggage_weight_kg"`
-	CostHandLugWeightRub float32 `json:"costHandLuggageWeightRub" db:"cost_hand_luggage_weight_rub"`
-	Wifi                 string  `json:"wifiFlg" db:"wifi_flg"`
-	Food                 string  `json:"foodFlg" db:"food_flg"`
-	Usb                  string  `json:"usbFlg" db:"usb_flg"`
-	ChangeDate           string  `json:"-" db:"change_dttm"`
+	Id                      int     `json:"id" db:"flight_id"`
+	Name                    string  `json:"flightName" db:"flight_name"`
+	AirlineId               int     `json:"airlineId" db:"airline_id"`
+	TicketNumEconomy        int     `json:"ticketNumEconomy" db:"ticket_num_economy_class"`
+	TicketNumEconomyAvail   int     `json:"ticketNumEconomyAvail" db:"ticket_num_economy_class_avail"`
+	TicketNumPrEconomy      int     `json:"ticketNumPrEconomy" db:"ticket_num_pr_economy_class"`
+	TicketNumPrEconomyAvail int     `json:"ticketNumPrEconomyAvail" db:"ticket_num_pr_economy_class_avail"`
+	TicketNumBusiness       int     `json:"ticketNumBusiness" db:"ticket_num_business_class"`
+	TicketNumBusinessAvail  int     `json:"ticketNumBusinessAvail" db:"ticket_num_business_class_avail"`
+	TicketNumFirstClass     int     `json:"ticketNumFirstClass" db:"ticket_num_first_class"`
+	TicketNumFirstAvail     int     `json:"ticketNumFirstAvail" db:"ticket_num_first_class_avail"`
+	CostRubEconomy          float32 `json:"costRubEconomy" db:"cost_economy_class_rub"`
+	CostRubPrEconomy        float32 `json:"costRubPrEconomy" db:"cost_pr_economy_class_rub"`
+	CostRubBusiness         float32 `json:"costRubBusiness" db:"cost_business_class_rub"`
+	CostRubFirstClass       float32 `json:"costRubFirstClass" db:"cost_first_class_rub"`
+	AircraftId              int     `json:"aircraftId" db:"aircraft_model_id"`
+	AirportDepId            int     `json:"airportDepId" db:"departure_airport_id"`
+	AirportLandId           int     `json:"airportLandId" db:"landing_airport_id"`
+	DepartureTime           string  `json:"departureTime" db:"departure_time"`
+	LandingTime             string  `json:"landingTime" db:"landing_time"`
+	MaxLugWeightKg          float32 `json:"maxLuggageWeightKg" db:"max_luggage_weight_kg"`
+	CostLugWeightRub        float32 `json:"costLuggageWeightRub" db:"cost_luggage_weight_rub"`
+	MaxHandLugWeightKg      float32 `json:"maxHandLuggageWeightKg" db:"max_hand_luggage_weight_kg"`
+	CostHandLugWeightRub    float32 `json:"costHandLuggageWeightRub" db:"cost_hand_luggage_weight_rub"`
+	Wifi                    string  `json:"wifiFlg" db:"wifi_flg"`
+	Food                    string  `json:"foodFlg" db:"food_flg"`
+	Usb                     string  `json:"usbFlg" db:"usb_flg"`
+	ChangeDate              string  `json:"-" db:"change_dttm"`
+}
+
+type Purchase struct {
+	Id           int     `json:"id" db:"purchase_id"`
+	UserId       int     `json:"-" db:"user_id"`
+	FlightId     int     `json:"flightId" db:"flight_id"`
+	CostRub      float32 `json:"costRub" db:"cost_rub_amt"`
+	Class        string  `json:"classFlg" db:"class_flg"`
+	Food         string  `json:"foodFlg" db:"food_flg"`
+	ChangeDate   string  `json:"-" db:"change_dttm"`
+	PurchaseDate string  `json:"-" db:"purchase_dttm"`
 }
 
 type UpdateUserInput struct {
