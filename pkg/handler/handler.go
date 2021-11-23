@@ -101,12 +101,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			authenticated := users.Group("/", h.userIdentify)
 			{
-				profile := authenticated.Group("/profile")
-				{
-					profile.POST("/", h.updateUser)
-					profile.GET("/", h.getUserProfile)
-				}
-
+				authenticated.POST("/", h.updateUser)
+				authenticated.GET("/", h.getUserProfile)
 			}
 		}
 

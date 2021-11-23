@@ -6,7 +6,6 @@ import (
 )
 
 type Repository struct {
-	AuthorizationClient
 	AuthorizationAdmin
 	User
 	Aircraft
@@ -15,9 +14,6 @@ type Repository struct {
 	Flight
 	Airline
 	Ticket
-}
-
-type AuthorizationClient interface {
 }
 type AuthorizationAdmin interface {
 	CreateAdminUser(gvapi.AuthAdminUser) (int, error)
@@ -64,7 +60,6 @@ type Flight interface {
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		AuthorizationClient: NewAuthClientPostgres(db),
 		AuthorizationAdmin:  NewAuthAdminPostgres(db),
 		User:                NewUserPostgres(db),
 		Aircraft:            NewAircraftPostgres(db),
