@@ -1,27 +1,65 @@
 version: '3.8'
 
 services:
+  db:
+    # restart: no
+    container_name: db
+    image: postgres:latest
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+      - DB_PASSWORD=qwerty
+    ports:
+      - 5435:5432
+    domainname: globalavia-api.ru
+    hostname: globalavia-api
+    networks:
+      - gvnetwork
+  migrate:
+    image: migrate/migrate
+    networks:
+      - gvnetwork
+    volumes:
+      - ./migrations:/migrations
+    command: ["-path", "migrations", "-database",  "postgres://postgres:qwerty@db:5432/postgres?sslmode=disable", "up", "3"]
+    depends_on: 
+      - db
   gvapi:
     build: ./
-    command: ./gvapi
+    command: ./wait-for-postgres.sh db ./gvapi 
     ports:
       - 8000:8000
     depends_on:
       - db
+      - redis
     environment:
       - DB_PASSWORD=qwerty
+      - DB_NAME=postgres
+      - DB_PORT=5435
       - ADMIN_SALT=sdlvjsbdvsv29837ef#sdfv
       - ADMIN_SIGNING_KEY=s234rl2iwe[v0w3fw3]
       - ADMIN_REFRESH_SECRET=sldfkjs;rfbwse3rw
       - USER_SALT=238ygvso3rgpweufy23
       - USER_SIGNING_KEY=?wefvw7sef%&(3)
       - USER_REFRESH_SECRET=ergwbef"423fhwe
-  db:
-    restart: always
-    image: postgres:latest
+      - VIRTUAL_HOST=globalavia-api.ru
+      - LETSENCRYPT_HOST=globalavia-api.ru
+    # restart: no
+    domainname: globalavia-api.ru
+    hostname: globalavia-api
+    networks:
+      - gvnetwork
+  redis:  
+    image: redis
     volumes:
-      - /var/lib/postgresql/data
-    environment:
-      - DB_PASSWORD=qwerty
+      - ./redis.conf:/var/lib/redis-stable/redis.conf
     ports:
-      - 5435:5432
+      - "6379"
+    networks:
+      - gvnetwork
+networks:
+    gvnetwork:
+        driver: bridge
+  
+   # nginx containe
