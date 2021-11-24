@@ -95,6 +95,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			{
 				authenticated.POST("/", h.createFlight)
 			}
+
+			flights.POST("/search", h.getFlightsByParams)
 		}
 
 		users := api.Group("/users")

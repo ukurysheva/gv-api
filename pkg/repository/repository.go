@@ -58,6 +58,7 @@ type Flight interface {
 	Create(userId int, airline gvapi.Flight) (int, error)
 	GetAll() ([]gvapi.Flight, error)
 	GetById(flightId int) (gvapi.Flight, error)
+	GetByParams(flightParams gvapi.FlightSearchParams) ([]gvapi.Flight, error)
 }
 
 func NewRepository(db *sqlx.DB) *Repository {

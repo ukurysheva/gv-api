@@ -1,6 +1,8 @@
 package gvapi
 
-import "errors"
+import (
+	"errors"
+)
 
 type Country struct {
 	Id         int    `json:"countryId" db:"country_id"`
@@ -97,6 +99,17 @@ type Flight struct {
 	Food                    string  `json:"foodFlg" db:"food_flg"`
 	Usb                     string  `json:"usbFlg" db:"usb_flg"`
 	ChangeDate              string  `json:"-" db:"change_dttm"`
+}
+
+type FlightSearchParams struct {
+	Class          string  `json:"class"`
+	CountryIdFrom  int     `json:"countryIdFrom" `
+	CountryIdTo    int     `json:"countryIdTo"`
+	DateFrom       string  `json:"dateFrom"`
+	DateTo         string  `json:"dateTo"`
+	Food           string  `json:"foodFlg"`
+	MaxLugWeightKg float32 `json:"maxLuggageWeightKg"`
+	BothWays       string  `json:"bothWays"`
 }
 
 type Purchase struct {

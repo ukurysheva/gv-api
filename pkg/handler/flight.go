@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,7 +13,6 @@ type getAllFlightsResponse struct {
 }
 
 func (h *Handler) createFlight(c *gin.Context) {
-	fmt.Println("createFlight")
 	userId, err := getUserId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -25,7 +23,6 @@ func (h *Handler) createFlight(c *gin.Context) {
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "Wrong values")
-		fmt.Println(err.Error())
 		return
 	}
 
@@ -76,25 +73,33 @@ func (h *Handler) getFlightById(c *gin.Context) {
 	c.JSON(http.StatusOK, flight)
 }
 
-// func (h *Handler) getFlightByParams(c *gin.Context) {
+func (h *Handler) getFlightsByParams(c *gin.Context) {
+	var err error
+	var input gvapi.FlightSearchParams
+	flights := []gvapi.Flight{}
+	if err = c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid input body")
+		return
+	}
+	if paramsExs := Validate(input); !paramsExs {
+		flights, err = h.services.Flight.GetAll()
+	} else {
+		success := CheckFlightParamsValues(c, input)
+		if !success {
+			return
+		}
 
-// 	var input gvapi.FlightSearchParams
+		flights, err = h.services.Flight.GetFlightByParams(input)
+		if err != nil {
+			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
 
-// 	if err := c.BindJSON(&input); err != nil {
-// 		newErrorResponse(c, http.StatusBadRequest, "invalid input body")
-// 		return
-// 	}
-
-// 	flights, err := h.services.Flight.getFlightByParams()
-// 	if err != nil {
-// 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, getAllFlightsResponse{
-// 		Data: flights,
-// 	})
-// }
+	c.JSON(http.StatusOK, getAllFlightsResponse{
+		Data: flights,
+	})
+}
 
 func CheckFlightValues(c *gin.Context, input gvapi.Flight) bool {
 
@@ -117,5 +122,41 @@ func CheckFlightValues(c *gin.Context, input gvapi.Flight) bool {
 	}
 
 	return true
+}
 
+func CheckFlightParamsValues(c *gin.Context, input gvapi.FlightSearchParams) bool {
+
+	flagVals := make(map[string]bool)
+	flagVals["Y"] = true
+	flagVals["N"] = true
+	class := make(map[string]bool)
+	class["economy"] = true
+	class["pr_economy"] = true
+	class["business"] = true
+	class["first"] = true
+
+	if input.Class != "" {
+		if _, ok := class[input.Class]; !ok {
+			newErrorResponse(c, http.StatusBadRequest, "wrong value for Class")
+			return false
+		}
+	}
+	if input.Food != "" {
+		if _, ok := flagVals[input.Food]; !ok {
+			newErrorResponse(c, http.StatusBadRequest, "wrong value for Food")
+			return false
+		}
+	}
+	return true
+
+}
+
+func Validate(input gvapi.FlightSearchParams) bool {
+
+	if input.Class == "" && input.CountryIdFrom == 0 && input.CountryIdTo == 0 && input.DateFrom == "" &&
+		input.DateTo == "" && input.Food == "" && input.MaxLugWeightKg == 0 && input.BothWays == "" {
+		return false
+	}
+
+	return true
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -51,7 +52,25 @@ func (r *FlightPostgres) Create(userId int, flight gvapi.Flight) (int, error) {
 func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 	var flights []gvapi.Flight
 
-	query := fmt.Sprintf("SELECT * FROM %s tl", flightTable)
+	query := fmt.Sprintf(`SELECT fl.*,`+
+		`fl.ticket_num_economy_class -  
+		    COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
+				GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
+		`fl.ticket_num_pr_economy_class -  
+				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
+				GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
+		`fl.ticket_num_business_class -  
+				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
+				GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
+		`fl.ticket_num_first_class -  
+				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
+				GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
+	FROM %s fl
+											`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable)
 	err := r.db.Select(&flights, query)
 
 	return flights, err
@@ -62,22 +81,21 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 
 	query := fmt.Sprintf(`SELECT fl.*,`+
 		`fl.ticket_num_economy_class -  
-					(SELECT COUNT(pr.purchase_id) FROM %s pr
+		     COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
 					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
-					GROUP BY pr.purchase_id) AS ticket_num_economy_class_avail,`+
-
+					GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
-					(SELECT COUNT(pr.purchase_id) FROM %s pr
+	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
 					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
-					GROUP BY pr.purchase_id) AS ticket_num_pr_economy_class_avail,`+
+					GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
-					(SELECT COUNT(pr.purchase_id) FROM %s pr
+					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
 					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
-					GROUP BY pr.purchase_id) 	AS ticket_num_business_class_avail,`+
+					GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
-					(SELECT COUNT(pr.purchase_id) FROM %s pr
+					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
 					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
-					GROUP BY pr.purchase_id) AS ticket_num_first_class_avail
+					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 		FROM %s fl WHERE fl.flight_id = $1
 												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable)
 	if err := r.db.Get(&flight, query, flightId); err != nil {
@@ -93,4 +111,69 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 	}
 
 	return flight, nil
+}
+
+func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, error) {
+
+	setValues := make([]string, 0)
+	args := make([]interface{}, 0)
+	argId := 1
+	var flights []gvapi.Flight
+
+	if input.Food != "" {
+		setValues = append(setValues, fmt.Sprintf("AND food_flg=$%d", argId))
+		fmt.Println(input.Food)
+		fmt.Printf("Food: %T\n", input.Food)
+		args = append(args, input.Food)
+		argId++
+	}
+
+	if input.MaxLugWeightKg != 0 {
+		setValues = append(setValues, fmt.Sprintf("AND max_luggage_weight_kg >= $%d", argId))
+		args = append(args, input.MaxLugWeightKg)
+		argId++
+	}
+
+	if input.Class != "" {
+		switch input.Class {
+		case "economy":
+			setValues = append(setValues, fmt.Sprintf("AND ticket_num_economy_class_avail > 0"))
+		case "pr_economy":
+			setValues = append(setValues, fmt.Sprintf("AND ticket_num_pr_economy_class_avail > 0"))
+		case "business":
+			setValues = append(setValues, fmt.Sprintf("AND ticket_num_business_class_avail > 0"))
+		case "first":
+			setValues = append(setValues, fmt.Sprintf("AND ticket_num_first_class_avail > 0"))
+		}
+	}
+
+	setQuery := strings.Join(setValues, " ")
+
+	query := fmt.Sprintf(`SELECT * FROM 
+	(
+		SELECT fl.*,`+
+		`fl.ticket_num_economy_class -  
+	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
+					GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
+		`fl.ticket_num_pr_economy_class -  
+	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
+					GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
+		`fl.ticket_num_business_class -  
+					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
+					GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
+		`fl.ticket_num_first_class -  
+					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
+					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
+		FROM %s fl
+		) q1 
+		WHERE TRUE %s
+												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, setQuery)
+
+	err := r.db.Select(&flights, query, args...)
+
+	return flights, err
 }
