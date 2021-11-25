@@ -43,6 +43,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			countries.GET("/", h.getAllCountries)
 			countries.GET("/:id", h.getCountryById)
+			countries.GET("/:id/airports", h.getAirportsByCountry)
 
 			authenticated := countries.Group("/", h.adminIdentify)
 			{

@@ -31,3 +31,7 @@ func (s *AirportService) GetAll() ([]gvapi.Airport, error) {
 func (s *AirportService) GetById(airport int) (gvapi.Airport, error) {
 	return s.repo.GetById(airport)
 }
+
+func (s *AirportService) GetByCountryId(CountryId int) ([]gvapi.Airport, error) {
+	return s.repo.GetByCountryId(CountryId)
+}

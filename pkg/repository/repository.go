@@ -41,6 +41,7 @@ type Airport interface {
 	Create(userId int, airport gvapi.Airport) (int, error)
 	GetAll() ([]gvapi.Airport, error)
 	GetById(airportId int) (gvapi.Airport, error)
+	GetByCountryId(countryId int) ([]gvapi.Airport, error)
 }
 
 type Airline interface {

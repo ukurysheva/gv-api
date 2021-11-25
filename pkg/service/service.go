@@ -49,12 +49,12 @@ type Country interface {
 	Create(userId int, country gvapi.Country) (int, error)
 	GetAll() ([]gvapi.Country, error)
 	GetById(countryId int) (gvapi.Country, error)
-	// Update(userId, countryId int, info gvapi.Country) error
 }
 type Airport interface {
 	Create(userId int, airport gvapi.Airport) (int, error)
 	GetAll() ([]gvapi.Airport, error)
 	GetById(airportId int) (gvapi.Airport, error)
+	GetByCountryId(countryId int) ([]gvapi.Airport, error)
 }
 type Flight interface {
 	Create(userId int, flight gvapi.Flight) (int, error)

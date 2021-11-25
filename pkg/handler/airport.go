@@ -75,6 +75,25 @@ func (h *Handler) getAirportById(c *gin.Context) {
 	c.JSON(http.StatusOK, airport)
 }
 
+func (h *Handler) getAirportsByCountry(c *gin.Context) {
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	airports, err := h.services.Airport.GetByCountryId(id)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, getAllArportResponse{
+		Data: airports,
+	})
+}
+
 func CheckAirportValues(c *gin.Context, input gvapi.Airport) bool {
 
 	flagVals := make(map[string]bool)
