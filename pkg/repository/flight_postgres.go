@@ -134,6 +134,16 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 		args = append(args, input.MaxLugWeightKg)
 		argId++
 	}
+	if input.DateFrom != "" {
+		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND DATE(departure_time) = DATE($%d)", argId))
+		args = append(args, input.DateFrom)
+		argId++
+	}
+	if input.DateTo != "" {
+		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND DATE(landing_time) = DATE($%d)", argId))
+		args = append(args, input.DateTo)
+		argId++
+	}
 
 	if input.CountryIdFrom != 0 {
 		setValuesExt = append(setValuesExt, fmt.Sprintf("AND apd.airport_iso_country_id = $%d", argId))
@@ -145,6 +155,11 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 		args = append(args, input.CountryIdTo)
 		argId++
 	}
+	// if input.BothWays == "Y" {
+	// 	setValuesExt = append(setValuesExt, fmt.Sprintf("AND apl.airport_iso_country_id = $%d", argId))
+	// 	args = append(args, input.CountryIdTo)
+	// 	argId++
+	// }
 
 	if input.Class != "" {
 		switch input.Class {
