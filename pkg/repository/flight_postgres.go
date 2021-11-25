@@ -115,13 +115,14 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 
 func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, error) {
 
-	setValues := make([]string, 0)
+	setValuesFlight := make([]string, 0)
+	setValuesExt := make([]string, 0)
 	args := make([]interface{}, 0)
 	argId := 1
 	var flights []gvapi.Flight
 
 	if input.Food != "" {
-		setValues = append(setValues, fmt.Sprintf("AND food_flg=$%d", argId))
+		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND food_flg=$%d", argId))
 		fmt.Println(input.Food)
 		fmt.Printf("Food: %T\n", input.Food)
 		args = append(args, input.Food)
@@ -129,29 +130,45 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 	}
 
 	if input.MaxLugWeightKg != 0 {
-		setValues = append(setValues, fmt.Sprintf("AND max_luggage_weight_kg >= $%d", argId))
+		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND max_luggage_weight_kg >= $%d", argId))
 		args = append(args, input.MaxLugWeightKg)
+		argId++
+	}
+
+	if input.CountryIdFrom != 0 {
+		setValuesExt = append(setValuesExt, fmt.Sprintf("AND apd.airport_iso_country_id = $%d", argId))
+		args = append(args, input.CountryIdFrom)
+		argId++
+	}
+	if input.CountryIdTo != 0 {
+		setValuesExt = append(setValuesExt, fmt.Sprintf("AND apl.airport_iso_country_id = $%d", argId))
+		args = append(args, input.CountryIdTo)
 		argId++
 	}
 
 	if input.Class != "" {
 		switch input.Class {
 		case "economy":
-			setValues = append(setValues, fmt.Sprintf("AND ticket_num_economy_class_avail > 0"))
+			setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND ticket_num_economy_class_avail > 0"))
 		case "pr_economy":
-			setValues = append(setValues, fmt.Sprintf("AND ticket_num_pr_economy_class_avail > 0"))
+			setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND ticket_num_pr_economy_class_avail > 0"))
 		case "business":
-			setValues = append(setValues, fmt.Sprintf("AND ticket_num_business_class_avail > 0"))
+			setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND ticket_num_business_class_avail > 0"))
 		case "first":
-			setValues = append(setValues, fmt.Sprintf("AND ticket_num_first_class_avail > 0"))
+			setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND ticket_num_first_class_avail > 0"))
 		}
 	}
 
-	setQuery := strings.Join(setValues, " ")
+	setQueryFlight := strings.Join(setValuesFlight, " ")
+	setQueryExt := strings.Join(setValuesExt, " ")
 
 	query := fmt.Sprintf(`SELECT * FROM 
 	(
-		SELECT fl.*,`+
+		SELECT fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
+		`fl.ticket_num_business_class, fl.ticket_num_first_class, fl.cost_economy_class_rub, fl.cost_pr_economy_class_rub, fl.cost_business_class_rub, `+
+		`fl.cost_first_class_rub,fl.aircraft_model_id, fl.departure_airport_id, fl.landing_airport_id, fl.departure_time, fl.landing_time, `+
+		`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
+		`fl.usb_flg, fl.change_dttm ,`+
 		`fl.ticket_num_economy_class -  
 	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
 					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
@@ -169,10 +186,15 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
 					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 		FROM %s fl
-		) q1 
+		LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
+		LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
 		WHERE TRUE %s
-												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, setQuery)
-
+		) q1 
+		
+		
+		WHERE TRUE %s
+		
+												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, airportTable, setQueryExt, setQueryFlight)
 	err := r.db.Select(&flights, query, args...)
 
 	return flights, err
