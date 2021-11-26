@@ -88,7 +88,9 @@ type Flight struct {
 	CostRubFirstClass       float32 `json:"costRubFirstClass" db:"cost_first_class_rub"`
 	AircraftId              int     `json:"aircraftId" db:"aircraft_model_id"`
 	AirportDepId            int     `json:"airportDepId" db:"departure_airport_id"`
+	CountryDepId            int     `json:"countryFromId" db:"departure_country_id"`
 	AirportLandId           int     `json:"airportLandId" db:"landing_airport_id"`
+	CountryLandId           int     `json:"countryToId" db:"landing_country_id"`
 	DepartureTime           string  `json:"departureTime" db:"departure_time"`
 	LandingTime             string  `json:"landingTime" db:"landing_time"`
 	MaxLugWeightKg          float32 `json:"maxLuggageWeightKg" db:"max_luggage_weight_kg"`
