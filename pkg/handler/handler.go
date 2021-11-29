@@ -110,7 +110,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				purchases := authenticated.Group("/purchases")
 				{
 					purchases.POST("/", h.createPurchase)
+					purchases.GET("/", h.getUserPurchases)
+					purchases.GET("/basket", h.getUserBasket)
 					purchases.GET("/:id", h.getPurchaseById)
+					purchases.POST("/:id/pay", h.payPurchase)
 				}
 			}
 

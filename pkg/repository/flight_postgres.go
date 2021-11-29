@@ -52,25 +52,31 @@ func (r *FlightPostgres) Create(userId int, flight gvapi.Flight) (int, error) {
 func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 	var flights []gvapi.Flight
 
-	query := fmt.Sprintf(`SELECT fl.*,`+
+	query := fmt.Sprintf(`SELECT fl.flight_id, fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
+		`fl.ticket_num_business_class, fl.ticket_num_first_class, fl.cost_economy_class_rub, fl.cost_pr_economy_class_rub, fl.cost_business_class_rub, `+
+		`fl.cost_first_class_rub,fl.aircraft_model_id, fl.departure_airport_id, fl.landing_airport_id, fl.departure_time, fl.landing_time, `+
+		`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
+		`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id, `+
 		`fl.ticket_num_economy_class -  
 		    COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
 				GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
 				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
 				GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
 				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
 				GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
 				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
 				GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
-	FROM %s fl
-											`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable)
+	FROM %s fl 
+	LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
+	LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
+											`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, airportTable)
 	err := r.db.Select(&flights, query)
 
 	return flights, err
@@ -79,25 +85,32 @@ func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 	var flight gvapi.Flight
 
-	query := fmt.Sprintf(`SELECT fl.*,`+
+	query := fmt.Sprintf(`SELECT fl.flight_id, fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
+		`fl.ticket_num_business_class, fl.ticket_num_first_class, fl.cost_economy_class_rub, fl.cost_pr_economy_class_rub, fl.cost_business_class_rub, `+
+		`fl.cost_first_class_rub,fl.aircraft_model_id, fl.departure_airport_id, fl.landing_airport_id, fl.departure_time, fl.landing_time, `+
+		`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
+		`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id,`+
 		`fl.ticket_num_economy_class -  
 		     COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
 	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
 					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
 					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
-		FROM %s fl WHERE fl.flight_id = $1
-												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable)
+		FROM %s fl 
+		LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
+  	LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
+		WHERE fl.flight_id = $1
+												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, airportTable)
 	if err := r.db.Get(&flight, query, flightId); err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -179,26 +192,26 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 
 	query := fmt.Sprintf(`SELECT * FROM 
 	(
-		SELECT fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
+		SELECT fl.flight_id, fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
 		`fl.ticket_num_business_class, fl.ticket_num_first_class, fl.cost_economy_class_rub, fl.cost_pr_economy_class_rub, fl.cost_business_class_rub, `+
 		`fl.cost_first_class_rub,fl.aircraft_model_id, fl.departure_airport_id, fl.landing_airport_id, fl.departure_time, fl.landing_time, `+
 		`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
-		`fl.usb_flg, fl.change_dttm ,`+
+		`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id,`+
 		`fl.ticket_num_economy_class -  
 	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
 	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
 					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
 					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
 					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 		FROM %s fl
 		LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id

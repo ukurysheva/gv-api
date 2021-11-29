@@ -13,4 +13,5 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.9.0 // indirect
 	github.com/twinj/uuid v1.0.0
+	github.com/zhashkevych/go-sqlxmock v1.5.1 // indirect
 )

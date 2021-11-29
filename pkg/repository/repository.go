@@ -53,6 +53,9 @@ type Airline interface {
 type Purchase interface {
 	Create(userId int, purchase gvapi.Purchase) (int, error)
 	GetById(purchaseId int) (gvapi.Purchase, error)
+	Update(input gvapi.PurchasePayInput) error
+	GetByUserId(userId int) ([]gvapi.Purchase, error)
+	GetBasketByUserId(userId int) ([]gvapi.Purchase, error)
 }
 
 type Flight interface {

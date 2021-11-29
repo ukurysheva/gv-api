@@ -75,6 +75,8 @@ func (r *UserPostgres) GetProfile(userId int) (gvapi.User, error) {
 
 	var user gvapi.User
 	query := fmt.Sprintf("SELECT user_email, user_first_name, user_last_name, user_phone_number, birth_date, "+
+		"card_exp_date, card_individual, card_number, "+
+
 		"COALESCE(user_middle_name, '') as user_middle_name, COALESCE(user_country_id, 0) as user_country_id,"+
 		"COALESCE(passport_number, '') as passport_number, COALESCE(passport_series, '') as passport_series,"+
 		"COALESCE(passport_address, '') as passport_address, COALESCE(living_address, '') as living_address "+
@@ -166,6 +168,21 @@ func (r *UserPostgres) Update(userId int, input gvapi.UpdateUserInput) error {
 	if input.LivingAddress != nil {
 		setValues = append(setValues, fmt.Sprintf("living_address=$%d", argId))
 		args = append(args, *input.LivingAddress)
+		argId++
+	}
+	if input.CardExpDate != nil {
+		setValues = append(setValues, fmt.Sprintf("card_exp_date=$%d", argId))
+		args = append(args, *input.CardExpDate)
+		argId++
+	}
+	if input.LivingAddress != nil {
+		setValues = append(setValues, fmt.Sprintf("card_individual=$%d", argId))
+		args = append(args, *input.LivingAddress)
+		argId++
+	}
+	if input.CardNumber != nil {
+		setValues = append(setValues, fmt.Sprintf("card_number=$%d", argId))
+		args = append(args, *input.CardNumber)
 		argId++
 	}
 	fmt.Println(input)

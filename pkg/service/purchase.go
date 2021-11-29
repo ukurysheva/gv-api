@@ -24,10 +24,18 @@ func (s *PurchaseService) Create(userId int, purchase gvapi.Purchase) (int, erro
 	return s.repo.Create(userId, purchase)
 }
 
-// func (s *PurchaseService) GetAll() ([]gvapi.Purchase, error) {
-// 	return s.repo.GetAll()
-// }
-
 func (s *PurchaseService) GetById(purchaseId int) (gvapi.Purchase, error) {
 	return s.repo.GetById(purchaseId)
+}
+
+func (s *PurchaseService) GetByUserId(userId int) ([]gvapi.Purchase, error) {
+	return s.repo.GetByUserId(userId)
+}
+
+func (s *PurchaseService) GetBasketByUserId(userId int) ([]gvapi.Purchase, error) {
+	return s.repo.GetBasketByUserId(userId)
+}
+
+func (s *PurchaseService) Update(input gvapi.PurchasePayInput) error {
+	return s.repo.Update(input)
 }

@@ -70,8 +70,10 @@ type Airline interface {
 
 type Purchase interface {
 	Create(userId int, purchase gvapi.Purchase) (int, error)
-	// GetAll() ([]gvapi.Airline, error)
-	GetById(purchase int) (gvapi.Purchase, error)
+	GetById(purchaseId int) (gvapi.Purchase, error)
+	GetByUserId(userId int) ([]gvapi.Purchase, error)
+	GetBasketByUserId(userId int) ([]gvapi.Purchase, error)
+	Update(input gvapi.PurchasePayInput) error
 }
 type Ticket interface {
 }

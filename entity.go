@@ -66,6 +66,9 @@ type User struct {
 	PassportSeries  string `json:"passportSeries" db:"passport_series"`
 	PassportAddress string `json:"passportAddress" db:"passport_address"`
 	LivingAddress   string `json:"livingAddress" db:"living_address"`
+	CardNumber      string `json:"cardNumber" db:"card_number"`
+	CardExpDate     string `json:"cardExpDate" db:"card_exp_date"`
+	CardIndividual  string `json:"cardIndividual" db:"card_individual"`
 	CreateDate      string `json:"-" db:"create_dttm"`
 	ChangeDate      string `json:"-" db:"change_dttm"`
 }
@@ -121,8 +124,22 @@ type Purchase struct {
 	CostRub      float32 `json:"costRub" db:"cost_rub_amt"`
 	Class        string  `json:"classFlg" db:"class_flg"`
 	Food         string  `json:"foodFlg" db:"food_flg"`
-	ChangeDate   string  `json:"-" db:"change_dttm"`
-	PurchaseDate string  `json:"-" db:"purchase_dttm"`
+	Payed        int     `json:"payed" db:"payed"`
+	PayMethod    string  `json:"payMethod" db:"pay_method"`
+	PayedDate    string  `json:"payedDate" db:"payed_dttm"`
+	ChangeDate   string  `json:"change_dttm" db:"change_dttm"`
+	PurchaseDate string  `json:"purchase_dttm" db:"purchase_dttm"`
+	BookTimeLeft string  `json:"timeLeft" db:"time_left"`
+}
+
+type PurchasePayInput struct {
+	PurchaseId int    `json:"id" db:"purchase_id"`
+	UserId     int    `json:"-" db:"user_id"`
+	PayMethod  string `json:"payMethod" db:"pay_method" binding:"required"`
+}
+
+type PurchaseParamsInput struct {
+	Payed int `json:"payed" db:"payed"`
 }
 
 type UpdateUserInput struct {
@@ -138,12 +155,16 @@ type UpdateUserInput struct {
 	PassportSeries  *string `json:"passportSeries" db:"passport_series"`
 	PassportAddress *string `json:"passportAddress" db:"passport_address"`
 	LivingAddress   *string `json:"livingAddress" db:"living_address"`
+	CardNumber      *string `json:"cardNumber" db:"card_number"`
+	CardExpDate     *string `json:"cardExpDate" db:"card_exp_date"`
+	CardIndividual  *string `json:"cardIndividual" db:"card_individual"`
 }
 
 func (i UpdateUserInput) Validate() error {
 	if i.Email == nil && i.Password == nil && i.FirstName == nil && i.LastName == nil &&
 		i.MiddleName == nil && i.PhoneNum == nil && i.BirthDate == nil && i.CountryId == nil &&
-		i.PassportNumber == nil && i.PassportSeries == nil && i.PassportAddress == nil && i.LivingAddress == nil {
+		i.PassportNumber == nil && i.PassportSeries == nil && i.PassportAddress == nil && i.LivingAddress == nil &&
+		i.CardExpDate == nil && i.CardIndividual == nil && i.CardNumber == nil {
 		return errors.New("update structure has no values")
 	}
 
