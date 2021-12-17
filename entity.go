@@ -14,6 +14,7 @@ type Country struct {
 }
 type Airline struct {
 	Id         int    `json:"airlineId" db:"airline_id"`
+	Name       string `json:"airlineName" db:"airline_name" binding:"required"`
 	Iata       string `json:"airlineIata" db:"airline_iata" binding:"required"`
 	Icao       string `json:"airlineIcao" db:"airline_icao" binding:"required"`
 	CountryId  int    `json:"airlineCountryId" db:"airline_country_id" binding:"required"`

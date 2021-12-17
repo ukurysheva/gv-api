@@ -43,7 +43,10 @@ func (r *AircraftPostgres) Create(userId int, aircraft gvapi.Aircraft) (int, err
 func (r *AircraftPostgres) GetAll() ([]gvapi.Aircraft, error) {
 	var countries []gvapi.Aircraft
 
-	query := fmt.Sprintf("SELECT * FROM %s tl", aircraftTable)
+	query := fmt.Sprintf(`SELECT aircraft_model_id, aircraft_iata_code, aircraft_model_name, aircraft_model_type`+
+		`, aircraft_icaic_code, aircraft_model_wing_type, economy_class_flg, pr_economy_class_flg, business_class_flg, first_class_flg `+
+		`, COALESCE(aircraft_model_manufacturer, '') as aircraft_model_manufacturer `+
+		` FROM %s	`, aircraftTable)
 	err := r.db.Select(&countries, query)
 
 	return countries, err
@@ -52,9 +55,10 @@ func (r *AircraftPostgres) GetAll() ([]gvapi.Aircraft, error) {
 func (r *AircraftPostgres) GetById(aircraftId int) (gvapi.Aircraft, error) {
 	var aircraft gvapi.Aircraft
 
-	query := fmt.Sprintf(`SELECT aircraft_model_id, aircraft_iata_code, aircraft_model_name, aircraft_model_manufacturer, aircraft_model_type`+
-		`, aircraft_icaic_code, aircraft_model_wing_type, economy_class_flg, pr_economy_class_flg, business_class_flg, first_class_flg FROM %s 
-	                      WHERE aircraft_model_id = $1`, aircraftTable)
+	query := fmt.Sprintf(`SELECT aircraft_model_id, aircraft_iata_code, aircraft_model_name, aircraft_model_type`+
+		`, aircraft_icaic_code, aircraft_model_wing_type, economy_class_flg, pr_economy_class_flg, business_class_flg, first_class_flg `+
+		`, COALESCE(aircraft_model_manufacturer, '') as aircraft_model_manufacturer `+
+		` FROM %s WHERE aircraft_model_id = $1`, aircraftTable)
 
 	if err := r.db.Get(&aircraft, query, aircraftId); err != nil {
 		switch err {

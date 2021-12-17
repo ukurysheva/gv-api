@@ -26,11 +26,11 @@ func (r *AirlinePostgres) Create(userId int, airline gvapi.Airline) (int, error)
 	}
 
 	var id int
-	q := `INSERT INTO %s (airline_iata, airline_icao, airline_country_id, airline_active_flg,change_dttm ) ` +
-		`VALUES ($1, $2, $3, $4, $5) RETURNING airline_id`
+	q := `INSERT INTO %s (airline_iata, airline_name, airline_icao, airline_country_id, airline_active_flg,change_dttm ) ` +
+		`VALUES ($1, $2, $3, $4, $5, $6) RETURNING airline_id`
 	createairlineQuery := fmt.Sprintf(q, airlineTable)
 
-	row := tx.QueryRow(createairlineQuery, airline.Iata, airline.Icao, airline.CountryId, airline.Active, time.Now())
+	row := tx.QueryRow(createairlineQuery, airline.Iata, airline.Name, airline.Icao, airline.CountryId, airline.Active, time.Now())
 
 	if err := row.Scan(&id); err != nil {
 		tx.Rollback()
