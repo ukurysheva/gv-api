@@ -79,14 +79,17 @@ type Flight struct {
 	Name                    string  `json:"flightName" db:"flight_name"`
 	AirlineId               int     `json:"airlineId" db:"airline_id"`
 	AirportDepId            int     `json:"airportDepId" db:"departure_airport_id"`
-	AirportDepName            string    `json:"airportDepName" db:"departure_airport_name"`
+	AirportDepName          string  `json:"airportDepName" db:"departure_airport_name"`
 	CountryDepId            int     `json:"countryFromId" db:"departure_country_id"`
+	CountryDepName          string  `json:"countryFromName" db:"departure_country_name"`
 	AirportLandId           int     `json:"airportLandId" db:"landing_airport_id"`
-	AirportLandName           string     `json:"airportLandName" db:"landing_airport_name"`
+	AirportLandName         string  `json:"airportLandName" db:"landing_airport_name"`
 	CountryLandId           int     `json:"countryToId" db:"landing_country_id"`
+	CountryLandName         string  `json:"countryToName" db:"landing_country_name"`
 	DepartureTime           string  `json:"departureTime" db:"departure_time"`
 	LandingTime             string  `json:"landingTime" db:"landing_time"`
 	AircraftId              int     `json:"aircraftId" db:"aircraft_model_id"`
+	AircraftName            string  `json:"aircraftName" db:"aircraft_name"`
 	TicketNumEconomy        int     `json:"ticketNumEconomy" db:"ticket_num_economy_class"`
 	TicketNumEconomyAvail   int     `json:"ticketNumEconomyAvail" db:"ticket_num_economy_class_avail"`
 	TicketNumPrEconomy      int     `json:"ticketNumPrEconomy" db:"ticket_num_pr_economy_class"`
