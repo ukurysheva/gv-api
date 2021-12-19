@@ -20,14 +20,14 @@ func (h *Handler) createCountry(c *gin.Context) {
 	var input gvapi.Country
 
 	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "Некорректно введены данные. Пожалуйста, повторите попытку.")
 		return
 	}
 
 	id, err := h.services.Country.Create(userId, input)
 
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		newErrorResponse(c, http.StatusInternalServerError, "Произошла ошибка. Пожалуйста, повторите попытку.")
 		return
 	}
 
