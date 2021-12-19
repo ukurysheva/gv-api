@@ -78,6 +78,7 @@ type Flight struct {
 	Id                      int     `json:"id" db:"flight_id"`
 	Name                    string  `json:"flightName" db:"flight_name"`
 	AirlineId               int     `json:"airlineId" db:"airline_id"`
+	AirlineName             string  `json:"airlineName" db:"airline_name"`
 	AirportDepId            int     `json:"airportDepId" db:"departure_airport_id"`
 	AirportDepName          string  `json:"airportDepName" db:"departure_airport_name"`
 	CountryDepId            int     `json:"countryFromId" db:"departure_country_id"`
