@@ -34,7 +34,7 @@ type Aircraft struct {
 	PrEconomyClass string `json:"prEconomyClass" db:"pr_economy_class_flg" binding:"required"`
 	BusinessClass  string `json:"businessClass" db:"business_class_flg" binding:"required"`
 	FirstClass     string `json:"firstClass" db:"first_class_flg" binding:"required"`
-	ChangeDate     string `json:"changeDate" db:"change_dttm"`
+	ChangeDate     string `json:"-" db:"change_dttm"`
 }
 
 type Airport struct {
@@ -50,7 +50,7 @@ type Airport struct {
 	Quarantine   string `json:"airportQuarantine" db:"quarantine_flg"`
 	CovidTest    string `json:"airportCovidTest" db:"covid_test_flg"`
 	LockDown     string `json:"airportLockDown" db:"lockdown_flg"`
-	ChangeDate   string `json:"changeDate" db:"change_dttm"`
+	ChangeDate   string `json:"-" db:"change_dttm"`
 }
 
 type User struct {
@@ -134,7 +134,7 @@ type Purchase struct {
 	Payed        int     `json:"payed" db:"payed"`
 	PayMethod    string  `json:"payMethod" db:"pay_method"`
 	PayedDate    string  `json:"payedDate" db:"payed_dttm"`
-	ChangeDate   string  `json:"change_dttm" db:"change_dttm"`
+	ChangeDate   string  `json:"-" db:"change_dttm"`
 	PurchaseDate string  `json:"purchase_dttm" db:"purchase_dttm"`
 	BookTimeLeft string  `json:"timeLeft" db:"time_left"`
 }
