@@ -40,9 +40,11 @@ func (s *FlightService) GetAll() ([]gvapi.Flight, error) {
 }
 
 func (s *FlightService) GetById(airport int) (gvapi.Flight, error) {
-	return s.repo.GetById(airport)
+	flights, err := s.repo.GetById(airport)
+
+	return flights, err
 }
 
-func (s *FlightService) GetFlightByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, error) {
+func (s *FlightService) GetFlightByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, []gvapi.Flight, error) {
 	return s.repo.GetByParams(input)
 }

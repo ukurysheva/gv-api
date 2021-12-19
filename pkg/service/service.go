@@ -60,7 +60,7 @@ type Flight interface {
 	Create(userId int, flight gvapi.Flight) (int, error)
 	GetAll() ([]gvapi.Flight, error)
 	GetById(flightId int) (gvapi.Flight, error)
-	GetFlightByParams(flightParams gvapi.FlightSearchParams) ([]gvapi.Flight, error)
+	GetFlightByParams(flightParams gvapi.FlightSearchParams) ([]gvapi.Flight, []gvapi.Flight, error)
 }
 type Airline interface {
 	Create(userId int, airline gvapi.Airline) (int, error)

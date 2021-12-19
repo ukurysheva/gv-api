@@ -11,6 +11,10 @@ import (
 type getAllFlightsResponse struct {
 	Data []gvapi.Flight `json:"data"`
 }
+type getFlightsByParamsResponse struct {
+	To   []gvapi.Flight `json:"to"`
+	Back []gvapi.Flight `json:"back"`
+}
 
 func (h *Handler) createFlight(c *gin.Context) {
 	userId, err := getUserId(c)
@@ -76,28 +80,30 @@ func (h *Handler) getFlightById(c *gin.Context) {
 func (h *Handler) getFlightsByParams(c *gin.Context) {
 	var err error
 	var input gvapi.FlightSearchParams
-	flights := []gvapi.Flight{}
+	flightsTo := []gvapi.Flight{}
+	flightsBack := []gvapi.Flight{}
 	if err = c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "invalid input body")
 		return
 	}
 	if paramsExs := Validate(input); !paramsExs {
-		flights, err = h.services.Flight.GetAll()
+		flightsTo, err = h.services.Flight.GetAll()
 	} else {
 		success := CheckFlightParamsValues(c, input)
 		if !success {
 			return
 		}
 
-		flights, err = h.services.Flight.GetFlightByParams(input)
+		flightsTo, flightsBack, err = h.services.Flight.GetFlightByParams(input)
 		if err != nil {
 			newErrorResponse(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, getAllFlightsResponse{
-		Data: flights,
+	c.JSON(http.StatusOK, getFlightsByParamsResponse{
+		To:   flightsTo,
+		Back: flightsBack,
 	})
 }
 
@@ -137,13 +143,19 @@ func CheckFlightParamsValues(c *gin.Context, input gvapi.FlightSearchParams) boo
 
 	if input.Class != "" {
 		if _, ok := class[input.Class]; !ok {
-			newErrorResponse(c, http.StatusBadRequest, "wrong value for Class")
+			newErrorResponse(c, http.StatusBadRequest, "Ошибка: Некорректно указано поле 'Класс'")
 			return false
 		}
 	}
 	if input.Food != "" {
 		if _, ok := flagVals[input.Food]; !ok {
-			newErrorResponse(c, http.StatusBadRequest, "wrong value for Food")
+			newErrorResponse(c, http.StatusBadRequest, "Ошибка: Некорректно указано поле 'Питание включено'")
+			return false
+		}
+	}
+	if input.BothWays != "" {
+		if _, ok := flagVals[input.BothWays]; !ok {
+			newErrorResponse(c, http.StatusBadRequest, "Ошибка: некорректно задано направление рейсов")
 			return false
 		}
 	}

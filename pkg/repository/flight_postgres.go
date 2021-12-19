@@ -83,7 +83,7 @@ func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 	LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
 	LEFT JOIN %s cl ON apl.airport_iso_country_id = cl.country_id
 	LEFT JOIN %s acr ON fl.aircraft_model_id = acr.aircraft_model_id
-	LEFT JOIN %s airline ON fl.airline_id = airline.airline_id
+	LEFT JOIN %s airline ON fl.airline_id = airline.airline_id ORDER BY fl.flight_id
 	`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, countryTable, airportTable, countryTable, aircraftTable, airlineTable)
 	err := r.db.Select(&flights, query)
 
@@ -134,53 +134,38 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 	return flight, nil
 }
 
-func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, error) {
+func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, []gvapi.Flight, error) {
 
 	setValuesFlight := make([]string, 0)
-	setValuesExt := make([]string, 0)
-	args := make([]interface{}, 0)
-	argId := 1
-	var flights []gvapi.Flight
+	// setValuesFlightTo := make([]string, 0)
+	// setValuesFlightFrom := make([]string, 0)
+	setValuesExtTo := make([]string, 0)
+	setValuesExtBack := make([]string, 0)
+	argsCountryTo := make([]interface{}, 0)
+	argsCountryBack := make([]interface{}, 0)
+	argIdCountryTo := 1
+	argIdCountryFrom := 1
+	flightsTo := []gvapi.Flight{}
+	flightsBack := []gvapi.Flight{}
+	var err error
 
 	if input.Food != "" {
-		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND food_flg=$%d", argId))
+		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND food_flg=$%d", argIdCountryTo))
 		fmt.Println(input.Food)
 		fmt.Printf("Food: %T\n", input.Food)
-		args = append(args, input.Food)
-		argId++
+		argsCountryTo = append(argsCountryTo, input.Food)
+		argsCountryBack = append(argsCountryBack, input.Food)
+		argIdCountryTo++
+		argIdCountryFrom++
 	}
 
 	if input.MaxLugWeightKg != 0 {
-		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND max_luggage_weight_kg >= $%d", argId))
-		args = append(args, input.MaxLugWeightKg)
-		argId++
+		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND max_luggage_weight_kg >= $%d", argIdCountryTo))
+		argsCountryTo = append(argsCountryTo, input.MaxLugWeightKg)
+		argsCountryBack = append(argsCountryBack, input.MaxLugWeightKg)
+		argIdCountryTo++
+		argIdCountryFrom++
 	}
-	if input.DateFrom != "" {
-		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND DATE(departure_time) = DATE($%d)", argId))
-		args = append(args, input.DateFrom)
-		argId++
-	}
-	if input.DateTo != "" {
-		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND DATE(landing_time) = DATE($%d)", argId))
-		args = append(args, input.DateTo)
-		argId++
-	}
-
-	if input.CountryIdFrom != 0 {
-		setValuesExt = append(setValuesExt, fmt.Sprintf("AND apd.airport_iso_country_id = $%d", argId))
-		args = append(args, input.CountryIdFrom)
-		argId++
-	}
-	if input.CountryIdTo != 0 {
-		setValuesExt = append(setValuesExt, fmt.Sprintf("AND apl.airport_iso_country_id = $%d", argId))
-		args = append(args, input.CountryIdTo)
-		argId++
-	}
-	// if input.BothWays == "Y" {
-	// 	setValuesExt = append(setValuesExt, fmt.Sprintf("AND apl.airport_iso_country_id = $%d", argId))
-	// 	args = append(args, input.CountryIdTo)
-	// 	argId++
-	// }
 
 	if input.Class != "" {
 		switch input.Class {
@@ -195,43 +180,117 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 		}
 	}
 
+	if input.DateFrom != "" {
+
+		setValuesExtTo = append(setValuesExtTo, fmt.Sprintf("AND DATE(fl.departure_time) = DATE($%d)", argIdCountryTo))
+		argsCountryTo = append(argsCountryTo, input.DateFrom)
+		argIdCountryTo++
+	}
+	if input.CountryIdFrom != 0 {
+		setValuesExtTo = append(setValuesExtTo, fmt.Sprintf("AND apd.airport_iso_country_id = $%d", argIdCountryTo))
+		argsCountryTo = append(argsCountryTo, input.CountryIdFrom)
+		argIdCountryTo++
+	}
+	if input.CountryIdTo != 0 {
+		setValuesExtTo = append(setValuesExtTo, fmt.Sprintf("AND apl.airport_iso_country_id = $%d", argIdCountryTo))
+		argsCountryTo = append(argsCountryTo, input.CountryIdTo)
+		argIdCountryTo++
+	}
+
 	setQueryFlight := strings.Join(setValuesFlight, " ")
-	setQueryExt := strings.Join(setValuesExt, " ")
+	setQueryExt := strings.Join(setValuesExtTo, " ")
 
 	query := fmt.Sprintf(`SELECT * FROM 
-	(
-		SELECT fl.flight_id, fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
+		(
+			SELECT fl.flight_id, fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
 		`fl.ticket_num_business_class, fl.ticket_num_first_class, fl.cost_economy_class_rub, fl.cost_pr_economy_class_rub, fl.cost_business_class_rub, `+
 		`fl.cost_first_class_rub,fl.aircraft_model_id, fl.departure_airport_id, fl.landing_airport_id, fl.departure_time, fl.landing_time, `+
 		`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
 		`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id,`+
 		`fl.ticket_num_economy_class -  
-	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
-					GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
-	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
-					GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
-					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
-					GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
-					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
-					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
-		FROM %s fl
-		LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
-		LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
-		WHERE TRUE %s
-		) q1 
-		
-		
-		WHERE TRUE %s
-		
-												`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, airportTable, setQueryExt, setQueryFlight)
-	err := r.db.Select(&flights, query, args...)
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
+			FROM %s fl
+			LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
+			LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
+			WHERE TRUE %s
+			ORDER BY fl.flight_id
+			) q1 
+			
+			
+			WHERE TRUE %s
+			
+													`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, airportTable, setQueryExt, setQueryFlight)
+	err = r.db.Select(&flightsTo, query, argsCountryTo...)
 
-	return flights, err
+	if input.BothWays == "Y" {
+		if input.DateTo != "" {
+			setValuesExtBack = append(setValuesExtBack, fmt.Sprintf("AND DATE(fl.departure_time) = DATE($%d)", argIdCountryFrom))
+			argsCountryBack = append(argsCountryBack, input.DateTo)
+			argIdCountryFrom++
+		}
+		if input.CountryIdTo != 0 {
+			setValuesExtBack = append(setValuesExtBack, fmt.Sprintf("AND apd.airport_iso_country_id = $%d", argIdCountryFrom))
+			argsCountryBack = append(argsCountryBack, input.CountryIdTo)
+			argIdCountryFrom++
+		}
+		if input.CountryIdFrom != 0 {
+			setValuesExtBack = append(setValuesExtBack, fmt.Sprintf("AND apl.airport_iso_country_id = $%d", argIdCountryFrom))
+			argsCountryBack = append(argsCountryBack, input.CountryIdFrom)
+			argIdCountryFrom++
+		}
+
+		setQueryFlight := strings.Join(setValuesFlight, " ")
+		setQueryExt := strings.Join(setValuesExtBack, " ")
+
+		query := fmt.Sprintf(`SELECT * FROM 
+		(
+			SELECT fl.flight_id, fl.flight_name, fl.airline_id, fl.ticket_num_economy_class, fl.ticket_num_pr_economy_class, `+
+			`fl.ticket_num_business_class, fl.ticket_num_first_class, fl.cost_economy_class_rub, fl.cost_pr_economy_class_rub, fl.cost_business_class_rub, `+
+			`fl.cost_first_class_rub,fl.aircraft_model_id, fl.departure_airport_id, fl.landing_airport_id, fl.departure_time, fl.landing_time, `+
+			`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
+			`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id,`+
+			`fl.ticket_num_economy_class -  
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
+			`fl.ticket_num_pr_economy_class -  
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
+			`fl.ticket_num_business_class -  
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
+			`fl.ticket_num_first_class -  
+						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
+						GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
+			FROM %s fl
+			LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
+			LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
+			WHERE TRUE %s ORDER BY fl.flight_id
+			) q1 
+			
+			
+			WHERE TRUE %s
+			
+													`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, airportTable, setQueryExt, setQueryFlight)
+		err = r.db.Select(&flightsBack, query, argsCountryBack...)
+	}
+
+	return flightsTo, flightsBack, err
 }
