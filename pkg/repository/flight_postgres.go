@@ -58,6 +58,8 @@ func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 		`fl.max_luggage_weight_kg, fl.cost_luggage_weight_rub, fl.max_hand_luggage_weight_kg, fl.cost_hand_luggage_weight_rub, fl.wifi_flg, fl.food_flg, `+
 		`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id, `+
 		`apd.airport_name AS departure_airport_name, apl.airport_name AS landing_airport_name, `+
+		`cd.country_name AS departure_country_name, cl.country_name AS landing_country_name, `+
+		`acr.aircraft_model_name AS aircraft_name, `+
 		`fl.ticket_num_economy_class -  
 		    COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
 				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
@@ -79,7 +81,8 @@ func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 	LEFT JOIN %s cd ON apd.airport_iso_country_id = cd.country_id
 	LEFT JOIN %s apl ON fl.landing_airport_id = apl.airport_id
 	LEFT JOIN %s cl ON apl.airport_iso_country_id = cl.country_id
-	`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, countryTable, airportTable, countryTable)
+	LEFT JOIN %s acr ON fl.aircraft_model_id = acr.aircraft_model_id
+	`, purchaseTable, purchaseTable, purchaseTable, purchaseTable, flightTable, airportTable, countryTable, airportTable, countryTable, aircraftTable)
 	err := r.db.Select(&flights, query)
 
 	return flights, err
