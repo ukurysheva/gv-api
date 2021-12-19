@@ -41,10 +41,11 @@ func (r *UserPostgres) CreateUser(user gvapi.User) (int, error) {
 	}
 
 	var id int
-	query = fmt.Sprintf("INSERT INTO %s (user_email, user_password, user_first_name, user_last_name, user_phone_number, birth_date)"+
-		" VALUES ($1, $2, $3, $4, $5, $6) RETURNING user_id", usersTable)
+	query = fmt.Sprintf("INSERT INTO %s (user_email, user_password, user_first_name, user_last_name, user_phone_number,"+ 
+	  " user_middle_name,  birth_date) " +
+		" VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING user_id", usersTable)
 
-	row := r.db.QueryRow(query, user.Email, user.Password, user.FirstName, user.LastName, user.PhoneNum, user.BirthDate)
+	row := r.db.QueryRow(query, user.Email, user.Password, user.FirstName, user.LastName, user.PhoneNum, user.MiddleName, user.BirthDate)
 	if err := row.Scan(&id); err != nil {
 		tx.Rollback()
 		return 0, err

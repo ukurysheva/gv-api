@@ -47,7 +47,7 @@ func (r *AirportPostgres) GetAll() ([]gvapi.Airport, error) {
 	query := fmt.Sprintf(`SELECT airport_id, airport_type, airport_name, airport_iso_country_id, `+
 		`COALESCE(airport_iata_code, '') as airport_iata_code, COALESCE(airport_home_link, '') as airport_home_link,`+
 		`COALESCE(airport_iso_region, '') as airport_iso_region, COALESCE(airport_municipality, '') as airport_municipality, `+
-		`visa_flg, quarantine_flg, covid_test_flg, lockdown_flg,change_dttm FROM %s`, airportTable)
+		`visa_flg, quarantine_flg, covid_test_flg, lockdown_flg,change_dttm FROM %s LIMIT 1000`, airportTable)
 	err := r.db.Select(&airports, query)
 
 	return airports, err
@@ -82,7 +82,7 @@ func (r *AirportPostgres) GetByCountryId(countryId int) ([]gvapi.Airport, error)
 		`COALESCE(airport_iata_code, '') as airport_iata_code, COALESCE(airport_home_link, '') as airport_home_link,`+
 		`COALESCE(airport_iso_region, '') as airport_iso_region, COALESCE(airport_municipality, '') as airport_municipality, `+
 		`visa_flg, quarantine_flg, covid_test_flg, lockdown_flg,change_dttm FROM %s `+
-		`WHERE airport_iso_country_id = $1`, airportTable)
+		`WHERE airport_iso_country_id = $1 LIMIT 1000`, airportTable)
 	err := r.db.Select(&airports, query, countryId)
 
 	return airports, err
