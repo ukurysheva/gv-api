@@ -78,6 +78,15 @@ type Flight struct {
 	Id                      int     `json:"id" db:"flight_id"`
 	Name                    string  `json:"flightName" db:"flight_name"`
 	AirlineId               int     `json:"airlineId" db:"airline_id"`
+	AirportDepId            int     `json:"airportDepId" db:"departure_airport_id"`
+	AirportDepName            string    `json:"airportDepName" db:"departure_airport_name"`
+	CountryDepId            int     `json:"countryFromId" db:"departure_country_id"`
+	AirportLandId           int     `json:"airportLandId" db:"landing_airport_id"`
+	AirportLandName           string     `json:"airportLandName" db:"landing_airport_name"`
+	CountryLandId           int     `json:"countryToId" db:"landing_country_id"`
+	DepartureTime           string  `json:"departureTime" db:"departure_time"`
+	LandingTime             string  `json:"landingTime" db:"landing_time"`
+	AircraftId              int     `json:"aircraftId" db:"aircraft_model_id"`
 	TicketNumEconomy        int     `json:"ticketNumEconomy" db:"ticket_num_economy_class"`
 	TicketNumEconomyAvail   int     `json:"ticketNumEconomyAvail" db:"ticket_num_economy_class_avail"`
 	TicketNumPrEconomy      int     `json:"ticketNumPrEconomy" db:"ticket_num_pr_economy_class"`
@@ -90,13 +99,6 @@ type Flight struct {
 	CostRubPrEconomy        float32 `json:"costRubPrEconomy" db:"cost_pr_economy_class_rub"`
 	CostRubBusiness         float32 `json:"costRubBusiness" db:"cost_business_class_rub"`
 	CostRubFirstClass       float32 `json:"costRubFirstClass" db:"cost_first_class_rub"`
-	AircraftId              int     `json:"aircraftId" db:"aircraft_model_id"`
-	AirportDepId            int     `json:"airportDepId" db:"departure_airport_id"`
-	CountryDepId            int     `json:"countryFromId" db:"departure_country_id"`
-	AirportLandId           int     `json:"airportLandId" db:"landing_airport_id"`
-	CountryLandId           int     `json:"countryToId" db:"landing_country_id"`
-	DepartureTime           string  `json:"departureTime" db:"departure_time"`
-	LandingTime             string  `json:"landingTime" db:"landing_time"`
 	MaxLugWeightKg          float32 `json:"maxLuggageWeightKg" db:"max_luggage_weight_kg"`
 	CostLugWeightRub        float32 `json:"costLuggageWeightRub" db:"cost_luggage_weight_rub"`
 	MaxHandLugWeightKg      float32 `json:"maxHandLuggageWeightKg" db:"max_hand_luggage_weight_kg"`
