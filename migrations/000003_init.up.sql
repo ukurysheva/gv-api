@@ -24,6 +24,6 @@ wifi_flg,
 food_flg,
 usb_flg,
 change_dttm
-from dbo.t_flights as t LIMIT 10;
+from dbo.t_flights as t;
 
 select setval('dbo.t_flights_flight_id_seq', (select max(flight_id) from dbo.t_flights));
