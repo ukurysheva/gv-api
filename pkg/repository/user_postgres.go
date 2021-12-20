@@ -41,8 +41,8 @@ func (r *UserPostgres) CreateUser(user gvapi.User) (int, error) {
 	}
 
 	var id int
-	query = fmt.Sprintf("INSERT INTO %s (user_email, user_password, user_first_name, user_last_name, user_phone_number,"+ 
-	  " user_middle_name,  birth_date) " +
+	query = fmt.Sprintf("INSERT INTO %s (user_email, user_password, user_first_name, user_last_name, user_phone_number,"+
+		" user_middle_name,  birth_date) "+
 		" VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING user_id", usersTable)
 
 	row := r.db.QueryRow(query, user.Email, user.Password, user.FirstName, user.LastName, user.PhoneNum, user.MiddleName, user.BirthDate)
@@ -123,7 +123,7 @@ func (r *UserPostgres) Update(userId int, input gvapi.UpdateUserInput) error {
 
 	if input.LastName != nil {
 		setValues = append(setValues, fmt.Sprintf("user_last_name=$%d", argId))
-		args = append(args, *input.FirstName)
+		args = append(args, *input.LastName)
 		argId++
 	}
 
