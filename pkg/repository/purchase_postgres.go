@@ -26,13 +26,13 @@ func (r *PurchasePostgres) Create(userId int, purchase gvapi.Purchase) (int, err
 	}
 
 	var id int
-	q := `INSERT INTO %s (user_id, flight_id, cost_rub_amt, class_flg, food_flg, payed, payed_dttm, change_dttm) ` +
-		`VALUES ($1, $2, $3, $4, $5, 0, $6, $7) RETURNING purchase_id`
+	q := `INSERT INTO %s (user_id, flight_id, class_flg, food_flg, payed, payed_dttm, change_dttm) ` +
+		`VALUES ($1, $2,  $3, $4, 0, $5, $6) RETURNING purchase_id`
 	createpurchaseQuery := fmt.Sprintf(q, purchaseTable)
 	fmt.Println(createpurchaseQuery)
 	t := new(time.Time)
 	fmt.Println(t)
-	row := tx.QueryRow(createpurchaseQuery, userId, purchase.FlightId, purchase.CostRub, purchase.Class, purchase.Food,
+	row := tx.QueryRow(createpurchaseQuery, userId, purchase.FlightId, purchase.Class, purchase.Food,
 		t, time.Now())
 
 	if err := row.Scan(&id); err != nil {
