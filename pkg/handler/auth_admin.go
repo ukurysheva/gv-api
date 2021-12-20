@@ -18,7 +18,7 @@ func (h *Handler) adminSignUp(c *gin.Context) {
 	var input gvapi.AuthAdminUser
 
 	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid input body")
+		newErrorResponse(c, http.StatusBadRequest, "Введены некорректные данные")
 		return
 	}
 	id, err := h.services.Authorization.CreateAdminUser(input)

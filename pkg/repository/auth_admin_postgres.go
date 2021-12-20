@@ -38,7 +38,7 @@ func (auth *AuthAdminPostgres) GetUserAdmin(email, password string) (gvapi.AuthA
 	if err := auth.db.Get(&adminUser, query, email, password); err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			return adminUser, errors.New("Wrong email and password")
+			return adminUser, errors.New("Введены некорректные email или пароль")
 		case nil:
 			return adminUser, nil
 		default:
