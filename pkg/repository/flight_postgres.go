@@ -63,19 +63,19 @@ func (r *FlightPostgres) GetAll() ([]gvapi.Flight, error) {
 		`airline.airline_name AS airline_name, `+
 		`fl.ticket_num_economy_class -  
 		    COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
 				GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
 				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
 				GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
 				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
 				GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
 				COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
+				WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
 				GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 	FROM %s fl 
 	LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
@@ -100,19 +100,19 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 		`fl.usb_flg, fl.change_dttm , apd.airport_iso_country_id AS departure_country_id, apl.airport_iso_country_id AS landing_country_id,`+
 		`fl.ticket_num_economy_class -  
 		     COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' 
 					GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
 	      	COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' 
 					GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
 					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' 
 					GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
 					COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
+					WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
 					GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 		FROM %s fl 
 		LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
@@ -123,7 +123,7 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 		switch err {
 		case sql.ErrNoRows:
 			fmt.Println("No rows were returned!")
-			return flight, errors.New("Nothing found")
+			return flight, errors.New("Не удалось совершить бронирование данного рейса. Пожалуйста, повторите попытку.")
 		case nil:
 			return flight, nil
 		default:
@@ -137,8 +137,6 @@ func (r *FlightPostgres) GetById(flightId int) (gvapi.Flight, error) {
 func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Flight, []gvapi.Flight, error) {
 
 	setValuesFlight := make([]string, 0)
-	// setValuesFlightTo := make([]string, 0)
-	// setValuesFlightFrom := make([]string, 0)
 	setValuesExtTo := make([]string, 0)
 	setValuesExtBack := make([]string, 0)
 	argsCountryTo := make([]interface{}, 0)
@@ -211,19 +209,19 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 		`cd.country_name AS departure_country_name, cl.country_name AS landing_country_name, `+
 		`fl.ticket_num_economy_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
 						GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 		`fl.ticket_num_pr_economy_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
 						GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 		`fl.ticket_num_business_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
 						GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 		`fl.ticket_num_first_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
 						GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 			FROM %s fl
 			LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id
@@ -271,19 +269,19 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 			`cd.country_name AS departure_country_name, cl.country_name AS landing_country_name, `+
 			`fl.ticket_num_economy_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'economy'
 						GROUP BY pr.purchase_id), 0) AS ticket_num_economy_class_avail,`+
 			`fl.ticket_num_pr_economy_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'pr_economy'
 						GROUP BY pr.purchase_id), 0) AS ticket_num_pr_economy_class_avail,`+
 			`fl.ticket_num_business_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'business'
 						GROUP BY pr.purchase_id), 0) 	AS ticket_num_business_class_avail,`+
 			`fl.ticket_num_first_class -  
 						COALESCE((SELECT COUNT(pr.purchase_id) FROM %s pr
-						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class' AND pr.payed = 1
+						WHERE pr.flight_id = fl.flight_id AND pr.class_flg = 'first_class'
 						GROUP BY pr.purchase_id), 0) AS ticket_num_first_class_avail
 			FROM %s fl
 			LEFT JOIN %s apd ON fl.departure_airport_id = apd.airport_id

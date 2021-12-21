@@ -16,12 +16,12 @@ func NewPurchaseService(repo repository.Purchase, flightsRepo repository.Flight)
 
 func (s *PurchaseService) Create(userId int, purchase gvapi.Purchase) (int, error) {
 
-	_, err := s.flightsRepo.GetById(purchase.FlightId)
+	flight, err := s.flightsRepo.GetById(purchase.FlightId)
 	if err != nil {
 		// country doesn't exist
 		return 0, err
 	}
-	return s.repo.Create(userId, purchase)
+	return s.repo.Create(userId, purchase, flight)
 }
 
 func (s *PurchaseService) GetById(purchaseId int) (gvapi.Purchase, error) {

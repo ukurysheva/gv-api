@@ -182,7 +182,7 @@ func CheckUserProfileData(userProfile gvapi.User) error {
 		userProfile.LivingAddress == "" || userProfile.PassportAddress == "" || userProfile.PassportNumber == "" ||
 		userProfile.PassportSeries == "" {
 
-		err := errors.New("Ошибка: Не заполнены персональные данные пользователя")
+		err := errors.New("Ошибка: Необходимо заполнить персональные данные")
 
 		return err
 	}

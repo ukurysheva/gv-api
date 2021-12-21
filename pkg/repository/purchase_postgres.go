@@ -18,24 +18,39 @@ func NewPurchasePostgres(db *sqlx.DB) *PurchasePostgres {
 	return &PurchasePostgres{db: db}
 }
 
-func (r *PurchasePostgres) Create(userId int, purchase gvapi.Purchase) (int, error) {
+func (r *PurchasePostgres) Create(userId int, purchase gvapi.Purchase, flight gvapi.Flight) (int, error) {
 
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
 	}
 
+	costRub := 0
+	fmt.Println(purchase)
+	fmt.Println(purchase.Class)
+	switch purchase.Class {
+	case "economy":
+		costRub = int(flight.CostRubEconomy)
+	case "pr_economy":
+		costRub = int(flight.CostRubPrEconomy)
+	case "business":
+		costRub = int(flight.CostRubBusiness)
+	case "first_class":
+		costRub = int(flight.CostRubFirstClass)
+	}
 	var id int
-	q := `INSERT INTO %s (user_id, flight_id, class_flg, food_flg, payed, payed_dttm, change_dttm) ` +
-		`VALUES ($1, $2,  $3, $4, 0, $5, $6) RETURNING purchase_id`
+	q := `INSERT INTO %s (user_id, flight_id, class_flg, food_flg, cost_rub_amt, payed, payed_dttm, change_dttm) ` +
+		`VALUES ($1, $2,  $3, $4, $5, $6, $7, $8) RETURNING purchase_id`
 	createpurchaseQuery := fmt.Sprintf(q, purchaseTable)
 	fmt.Println(createpurchaseQuery)
 	t := new(time.Time)
 	fmt.Println(t)
-	row := tx.QueryRow(createpurchaseQuery, userId, purchase.FlightId, purchase.Class, purchase.Food,
+	row := tx.QueryRow(createpurchaseQuery, userId, purchase.FlightId, purchase.Class, purchase.Food, costRub, 0,
 		t, time.Now())
 
 	if err := row.Scan(&id); err != nil {
+		fmt.Println("err creating purchase")
+		fmt.Println(err)
 		tx.Rollback()
 		return 0, err
 	}
@@ -55,7 +70,9 @@ func (r *PurchasePostgres) GetAll() ([]gvapi.Purchase, error) {
 func (r *PurchasePostgres) GetByUserId(userId int) ([]gvapi.Purchase, error) {
 	purchases := []gvapi.Purchase{}
 
-	query := fmt.Sprintf("SELECT * FROM %s tl WHERE user_id = $1 AND payed = 1", purchaseTable)
+	query := fmt.Sprintf(`SELECT tl.*  FROM %s tl WHERE user_id = $1 AND payed = 1 
+
+												`, purchaseTable)
 
 	if err := r.db.Select(&purchases, query, userId); err != nil {
 		switch err {
@@ -109,6 +126,7 @@ func (r *PurchasePostgres) GetById(purchaseId int) (gvapi.Purchase, error) {
 		ELSE 15 - date_part('minute', current_timestamp - purchase_dttm)
 	END time_left `+
 		`FROM %s  WHERE purchase_id = $1`, purchaseTable)
+
 	if err := r.db.Get(&purchase, query, purchaseId); err != nil {
 		switch err {
 		case sql.ErrNoRows:

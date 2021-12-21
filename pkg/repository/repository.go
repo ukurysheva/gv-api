@@ -51,7 +51,7 @@ type Airline interface {
 }
 
 type Purchase interface {
-	Create(userId int, purchase gvapi.Purchase) (int, error)
+	Create(userId int, purchase gvapi.Purchase, flight gvapi.Flight) (int, error)
 	GetById(purchaseId int) (gvapi.Purchase, error)
 	Update(input gvapi.PurchasePayInput) error
 	GetByUserId(userId int) ([]gvapi.Purchase, error)
