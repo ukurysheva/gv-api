@@ -133,15 +133,18 @@ func (h *Handler) payPurchase(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, "Ошибка: Не удалось найти забронированный билет.")
 		return
 	}
+	fmt.Println(purchase)
 	if purchase.Payed == 1 {
 		newErrorResponse(c, http.StatusBadRequest, "Ошибка: Билет уже оплачен. Приятного полета!")
 		return
 	}
-	if mins, err := strconv.Atoi(purchase.BookTimeLeft); err != nil || mins <= 0 {
+	mins, err := strconv.Atoi(purchase.BookTimeLeft)
+	if err != nil || mins <= 0 {
 		fmt.Println(err)
 		newErrorResponse(c, http.StatusBadRequest, "Ошибка: Невозможно купить билет, так как срок действия брони истек")
 		return
 	}
+	fmt.Println("mins left", mins)
 
 	userProfile, err := h.services.User.GetProfile(userId)
 	if err != nil {

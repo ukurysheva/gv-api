@@ -46,7 +46,7 @@ func (r *PurchasePostgres) Create(userId int, purchase gvapi.Purchase, flight gv
 	t := new(time.Time)
 	fmt.Println(t)
 	row := tx.QueryRow(createpurchaseQuery, userId, purchase.FlightId, purchase.Class, purchase.Food, costRub, 0,
-		t, time.Now())
+		time.Now(), time.Now())
 
 	if err := row.Scan(&id); err != nil {
 		fmt.Println("err creating purchase")
@@ -97,7 +97,7 @@ func (r *PurchasePostgres) GetBasketByUserId(userId int) ([]gvapi.Purchase, erro
 			 WHEN date_part('minute', current_timestamp - purchase_dttm) > 15 THEN 0
 			 ELSE 15 - date_part('minute', current_timestamp - purchase_dttm)
 		 END time_left `+
-		`FROM %s tl WHERE user_id = $1 AND payed = 0`, purchaseTable)
+		`FROM %s tl WHERE user_id = $1 AND payed = 0 `, purchaseTable)
 
 	if err := r.db.Select(&purchases, query, userId); err != nil {
 		switch err {
@@ -125,7 +125,7 @@ func (r *PurchasePostgres) GetById(purchaseId int) (gvapi.Purchase, error) {
 		WHEN date_part('minute', current_timestamp - purchase_dttm) > 15 THEN 0
 		ELSE 15 - date_part('minute', current_timestamp - purchase_dttm)
 	END time_left `+
-		`FROM %s  WHERE purchase_id = $1`, purchaseTable)
+		`FROM %s  WHERE purchase_id = $1 `, purchaseTable)
 
 	if err := r.db.Get(&purchase, query, purchaseId); err != nil {
 		switch err {
