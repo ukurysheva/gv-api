@@ -147,7 +147,7 @@ func (r *FlightPostgres) GetByParams(input gvapi.FlightSearchParams) ([]gvapi.Fl
 	flightsBack := []gvapi.Flight{}
 	var err error
 
-	if input.Food != "" {
+	if input.Food != "" && input.Food == "Y" {
 		setValuesFlight = append(setValuesFlight, fmt.Sprintf("AND food_flg=$%d", argIdCountryTo))
 		fmt.Println(input.Food)
 		fmt.Printf("Food: %T\n", input.Food)
