@@ -102,12 +102,12 @@ func CheckPurchaseValues(c *gin.Context, input gvapi.Purchase) bool {
 	class["business"] = true
 	class["first"] = true
 	fmt.Println(input)
-	if _, ok := flagVals[input.Food]; !ok {
+	if input.Food && _, ok := flagVals[input.Food]; !ok {
 		newErrorResponse(c, http.StatusBadRequest, "Ошибка: Неправильно задан параметр 'Питание включено'")
 		return false
 	}
 
-	if _, ok := class[input.Class]; !ok {
+	if input.Class && _, ok := class[input.Class]; !ok {
 		newErrorResponse(c, http.StatusBadRequest, "Ошибка: Неправильно задано имя класса билета")
 		return false
 	}
