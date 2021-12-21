@@ -35,7 +35,7 @@ func (r *PurchasePostgres) Create(userId int, purchase gvapi.Purchase, flight gv
 		costRub = int(flight.CostRubPrEconomy)
 	case "business":
 		costRub = int(flight.CostRubBusiness)
-	case "first_class":
+	case "first":
 		costRub = int(flight.CostRubFirstClass)
 	}
 	var id int
